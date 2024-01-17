@@ -268,7 +268,7 @@ app.get("/", (req, res) => {
 });
 
 server.listen(8099, () => {
-  console.log("Listening to port 8080");
+  console.log("Listening to port 8099");
 });
 
 function tryParseJSONObject(jsonString) {
