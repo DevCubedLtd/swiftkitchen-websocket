@@ -1,0 +1,15 @@
+{
+  "name": "devtestserver",
+  "version": "1.0.0",
+  "description": "server for the development of swiftkitchen onsite link with the companion app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "simon harris",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  }
+}
