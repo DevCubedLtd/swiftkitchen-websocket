@@ -250,7 +250,7 @@ io.on("connection", function connection(ws) {
         // we need to send this to the linked client
         // we need to find the linked client
         clientInfo.forEach((client) => {
-          if (ws.linkedClientId === client.clientId) {
+          if (thisClient.linkedClientId === client.clientId) {
             // we found the linked client
             // we need to send the message to them
             console.log("found a client to selected child too");
