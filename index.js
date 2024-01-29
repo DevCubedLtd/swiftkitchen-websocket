@@ -23,10 +23,14 @@ const messageTypes = {
   REQUEST_LINKING_CODE: "REQUEST_LINKING_CODE",
   LINKING_CODE: "LINKING_CODE",
   LINK_SUCCESS: "LINK_SUCCESS",
+  UNLINK_SUCCESS: "UNLINK_SUCCESS",
+  REQUEST_UNLINK: "REQUEST_UNLINK",
   LINKING_ERROR: "LINKING_ERROR",
   FOOD_DATA: "FOOD_DATA",
   REQUEST_FOOD_DATA: "REQUEST_FOOD_DATA",
   CHILD_SELECTED: "CHILD_SELECTED",
+  LINK_DISCONNECTED: "LINK_DISCONNECTED",
+  LINK_CONNECTED: "LINK_CONNECTED",
 };
 
 io.on("connection", function connection(ws) {
@@ -61,6 +65,7 @@ io.on("connection", function connection(ws) {
           "device already registered, reassigning old id: ",
           ws.clientId
         );
+        client.currentlyConnected = true;
       }
 
       // if this is a controller we need to register it,
@@ -89,18 +94,37 @@ io.on("connection", function connection(ws) {
               // we need to send the message to them
 
               // found a client we are linked to!
-              client.ws.send(
-                JSON.stringify({
-                  type: messageTypes.LINK_SUCCESS,
-                  deviceId: ws.clientId,
-                })
-              );
+              if (client.currentlyConnected) {
+                client.ws.send(
+                  JSON.stringify({
+                    type: messageTypes.LINK_SUCCESS,
+                    deviceId: ws.clientId,
+                  })
+                );
+
+                client.ws.send(
+                  JSON.stringify({
+                    type: messageTypes.LINK_CONNECTED,
+                  })
+                );
+
+                linkedClient.isConnectedToLink = true;
+              }
+
               ws.send(
                 JSON.stringify({
                   type: messageTypes.LINK_SUCCESS,
                   deviceId: parsedMessage.linkedDeviceId,
                 })
               );
+              if (client.currentlyConnected) {
+                ws.send(
+                  JSON.stringify({
+                    type: messageTypes.LINK_CONNECTED,
+                  })
+                );
+                thisClient.isConnectedToLink = true;
+              }
             }
           });
         }
@@ -138,12 +162,22 @@ io.on("connection", function connection(ws) {
         // we need to send a message to both devices saying linked.
         // and who linked too
 
-        linkedClient.ws.send(
-          JSON.stringify({
-            type: messageTypes.LINK_SUCCESS,
-            deviceId: ws.clientId,
-          })
-        );
+        if (linkedClient.currentlyConnected) {
+          linkedClient.ws.send(
+            JSON.stringify({
+              type: messageTypes.LINK_SUCCESS,
+              deviceId: ws.clientId,
+            })
+          );
+          client.ws.send(
+            JSON.stringify({
+              type: messageTypes.LINK_CONNECTED,
+            })
+          );
+
+          linkedClient.isConnectedToLink = true;
+        }
+
         // will this only send to this client?
         ws.send(
           JSON.stringify({
@@ -151,9 +185,17 @@ io.on("connection", function connection(ws) {
             deviceId: parsedMessage.linkedDeviceId,
           })
         );
+        if (linkedClient.currentlyConnected) {
+          ws.send(
+            JSON.stringify({
+              type: messageTypes.LINK_CONNECTED,
+            })
+          );
+
+          thisClient.isConnectedToLink = true;
+        }
 
         thisClient.isConnectedToLink = true;
-        linkedClient.isConnectedToLink = true;
 
         // we need to set both clients as linked in our clientInfo
       }
@@ -284,6 +326,61 @@ io.on("connection", function connection(ws) {
           }
         });
       }
+
+      if (parsedMessage?.type === messageTypes.REQUEST_UNLINK) {
+        if (!thisClient) {
+          console.log("requested unlink for unregistered client?");
+          return;
+        }
+
+        thisClient.isConnectedToLink = false;
+
+        if (thisClient?.linkedClientId) {
+          // is a companion...
+          // need to remove link and tell both its unlinked
+          thisClient.linkedClientId = null;
+
+          let linkedClient = clientInfo.find(
+            (client) => client.clientId === thisClient?.linkedClientId
+          );
+          linkedClient.isConnectedToLink = false;
+
+          // tell both clients theyre unlinked
+          if (linkedClient.currentlyConnected) {
+            linkedClient.ws.send(
+              JSON.stringify({
+                type: messageTypes.UNLINK_SUCCESS,
+              })
+            );
+          }
+        }
+
+        // could be controller
+        // need to find companion, unlink in the client info and if connected tell it
+        clientInfo.forEach((client) => {
+          if (client?.linkedClientId === ws.clientId) {
+            // we found the linked client
+            // we need to send the message to them
+            client.linkedClientId = null;
+            client.isConnectedToLink = false;
+
+            // found a client we are linked to!
+            if (client.currentlyConnected) {
+              client.ws.send(
+                JSON.stringify({
+                  type: messageTypes.UNLINK_SUCCESS,
+                })
+              );
+            }
+          }
+        });
+
+        ws.send(
+          JSON.stringify({
+            type: messageTypes.UNLINK_SUCCESS,
+          })
+        );
+      }
     }
   });
 
@@ -302,8 +399,15 @@ io.on("connection", function connection(ws) {
           let linkedClient = clientInfo.find(
             (client) => client.clientId === client.linkedClientId
           );
+
           if (linkedClient) {
             linkedClient.isConnectedToLink = false;
+            // TODO: we should also tell the clients theyre no longer connected
+            linkedClient.ws.send(
+              JSON.stringify({
+                type: messageTypes.LINK_DISCONNECTED,
+              })
+            );
           }
         }
       }
@@ -312,6 +416,13 @@ io.on("connection", function connection(ws) {
       clientInfo.forEach((client) => {
         if (client?.linkedClientId === ws.clientId) {
           client.connectedToLink = false;
+
+          // TODO: we should also tell the clients theyre no longer connected
+          client.ws.send(
+            JSON.stringify({
+              type: messageTypes.LINK_DISCONNECTED,
+            })
+          );
         }
       });
     });
