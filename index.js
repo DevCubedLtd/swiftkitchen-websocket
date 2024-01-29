@@ -17,6 +17,18 @@ const deviceTypes = {
   CONTROLLER: "CONTROLLER",
 };
 
+const messageTypes = {
+  REGISTER_CONTROLLER: "REGISTER_CONTROLLER",
+  REQUEST_LINK: "REQUEST_LINK",
+  REQUEST_LINKING_CODE: "REQUEST_LINKING_CODE",
+  LINKING_CODE: "LINKING_CODE",
+  LINK_SUCCESS: "LINK_SUCCESS",
+  LINKING_ERROR: "LINKING_ERROR",
+  FOOD_DATA: "FOOD_DATA",
+  REQUEST_FOOD_DATA: "REQUEST_FOOD_DATA",
+  CHILD_SELECTED: "CHILD_SELECTED",
+};
+
 io.on("connection", function connection(ws) {
   if (!ws.clientId) {
     // when someone connects theyre assigned an id
@@ -51,13 +63,17 @@ io.on("connection", function connection(ws) {
         );
       }
 
-      if (parsedMessage?.type === "REGISTER_CONTROLLER") {
+      // if this is a controller we need to register it,
+      // it might already exist (found above) if so
+      // we skip that part and just look to see if we need to auto-link it
+      if (parsedMessage?.type === messageTypes.REGISTER_CONTROLLER) {
         if (!thisClient) {
-          /// this device is a companion device.
+          /// this device is a controller.
           clientInfo.push({
             clientId: ws.clientId,
             deviceId: parsedMessage.deviceId,
             deviceType: deviceTypes.CONTROLLER,
+            isLinkOnline: false,
             ws,
           });
         }
@@ -74,14 +90,13 @@ io.on("connection", function connection(ws) {
               // found a client we are linked to!
               client.ws.send(
                 JSON.stringify({
-                  type: "LINK_SUCCESS",
+                  type: messageTypes.LINK_SUCCESS,
                   deviceId: ws.clientId,
                 })
               );
-              // will this only send to this client?
               ws.send(
                 JSON.stringify({
-                  type: "LINK_SUCCESS",
+                  type: messageTypes.LINK_SUCCESS,
                   deviceId: parsedMessage.linkedDeviceId,
                 })
               );
@@ -90,19 +105,12 @@ io.on("connection", function connection(ws) {
         }
       }
 
-      if (parsedMessage?.type === "REQUEST_LINK") {
-        console.log("request link");
-
+      // sent by the controller to link to a companion device
+      if (parsedMessage?.type === messageTypes.REQUEST_LINK) {
         // we need to add this as a client with device type of
         // this following code should NEVER happen
         if (!thisClient) {
-          /// this device is a companion device.
-          clientInfo.push({
-            clientId: ws.clientId,
-            deviceId: parsedMessage.deviceId,
-            deviceType: deviceTypes.CONTROLLER,
-            ws,
-          });
+          console.log("request link from unregistered client?");
         }
 
         let thisLinkedClientId = parsedMessage.linkedClientId.trim();
@@ -112,12 +120,10 @@ io.on("connection", function connection(ws) {
           (client) => client.clientId === thisLinkedClientId
         );
 
-        console.log("linked client", linkedClient);
-
         if (!linkedClient) {
           // send error message back to client
           sendMessageToClient(ws.clientId, {
-            type: "LINKING_ERROR",
+            type: messageTypes.LINKING_ERROR,
             message: "Device not found",
           });
           return;
@@ -132,20 +138,24 @@ io.on("connection", function connection(ws) {
         // and who linked too
         linkedClient.ws.send(
           JSON.stringify({
-            type: "LINK_SUCCESS",
+            type: messageTypes.LINK_SUCCESS,
             deviceId: ws.clientId,
           })
         );
         // will this only send to this client?
         ws.send(
           JSON.stringify({
-            type: "LINK_SUCCESS",
+            type: messageTypes.LINK_SUCCESS,
             deviceId: parsedMessage.linkedDeviceId,
           })
         );
+
+        // we need to set both clients as linked in our clientInfo
       }
 
-      if (parsedMessage?.type === "REQUEST_LINKING_CODE") {
+      // this is how we register companions, we return them a linking code
+      // if they arnt already registered
+      if (parsedMessage?.type === messageTypes.REQUEST_LINKING_CODE) {
         if (!thisClient) {
           /// this device is a companion device.
           clientInfo.push({
@@ -153,13 +163,14 @@ io.on("connection", function connection(ws) {
             deviceId: parsedMessage.deviceId,
             deviceType: deviceTypes.COMPANION,
             linkedClientId: null,
+            isLinkOnline: false,
             ws,
           });
         }
 
         ws.send(
           JSON.stringify({
-            type: "LINKING_CODE",
+            type: messageTypes.LINKING_CODE,
             code: ws.clientId,
           })
         );
@@ -173,20 +184,50 @@ io.on("connection", function connection(ws) {
           );
           linkedClient.ws.send(
             JSON.stringify({
-              type: "LINK_SUCCESS",
+              type: messageTypes.LINK_SUCCESS,
               deviceId: ws.clientId,
             })
           );
           ws.send(
             JSON.stringify({
-              type: "LINK_SUCCESS",
+              type: messageTypes.LINK_SUCCESS,
               deviceId: parsedMessage.linkedDeviceId,
             })
           );
         }
       }
 
-      if (parsedMessage?.type === "FOOD_DATA") {
+      // if the companion has no food data it requests it so it can populate
+      // itself to allow child selection
+      if (parsedMessage?.type === messageTypes.REQUEST_FOOD_DATA) {
+        if (!thisClient) {
+          console.log("requested food data for unregistered client?");
+          return;
+        }
+
+        let linkedClient = clientInfo.find(
+          (client) => client.clientId === thisClient.linkedClientId
+        );
+        if (!linkedClient) {
+          console.log("linked client not found");
+          return;
+        }
+        console.log("reqesting food data from:", linkedClient.clientId);
+        linkedClient.ws.send(
+          JSON.stringify({
+            type: messageTypes.REQUEST_FOOD_DATA,
+          })
+        );
+        console.log("food data requested");
+
+        // we need to send this to the linked client
+      }
+
+      // this is the food data that is then sent to companion so it can populate itself
+      // should be passed to companion
+      // when a child signoff status is updated the food data is sent back to the
+      // companion so it can update itself accordingly
+      if (parsedMessage?.type === messageTypes.FOOD_DATA) {
         if (!thisClient) {
           console.log("food data received but no client found");
           return;
@@ -212,39 +253,13 @@ io.on("connection", function connection(ws) {
         lastFoodData = parsedMessage.data;
       }
 
-      if (parsedMessage?.type === "REQUEST_FOOD_DATA") {
-        if (!thisClient) {
-          console.log("requested food data for unregistered client?");
-          return;
-        }
-
-        let linkedClient = clientInfo.find(
-          (client) => client.clientId === thisClient.linkedClientId
-        );
-        if (!linkedClient) {
-          console.log("linked client not found");
-          return;
-        }
-        console.log("reqesting food data from:", linkedClient.clientId);
-        linkedClient.ws.send(
-          JSON.stringify({
-            type: "REQUEST_FOOD_DATA",
-          })
-        );
-        console.log("food data requested");
-
-        // we need to send this to the linked client
-      }
-
-      if (parsedMessage?.type === "CHILD_SELECTED") {
+      // when a child is selected on the companion that child is sent back to
+      // onsite so they know which and can sign it off.
+      if (parsedMessage?.type === messageTypes.CHILD_SELECTED) {
         if (!thisClient) {
           /// this device is a companion device.
-          clientInfo.push({
-            clientId: ws.clientId,
-            deviceId: parsedMessage.deviceId,
-            deviceType: deviceTypes.CONTROLLER,
-            ws,
-          });
+          console.log("selected a child when device isnt registered?");
+          return;
         }
 
         // we need to send this to the linked client
@@ -256,7 +271,7 @@ io.on("connection", function connection(ws) {
             console.log("found a client to selected child too");
             client.ws.send(
               JSON.stringify({
-                type: "CHILD_SELECTED",
+                type: messageTypes.CHILD_SELECTED,
                 data: parsedMessage.data,
               })
             );
