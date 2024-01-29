@@ -290,12 +290,30 @@ io.on("connection", function connection(ws) {
   ws.on("close", function close() {
     console.log("disconnected", ws);
     // find client in clientinfo
+
     clientInfo.forEach((client) => {
       if (client.clientId === ws.clientId) {
         console.log("found client to disconnect", client.clientId);
         client.currentlyConnected = false;
         client.isConnectedToLink = false;
+
+        if (client?.linkedClientId) {
+          // we need to tell linked device that its no longer connected to the client
+          let linkedClient = clientInfo.find(
+            (client) => client.clientId === client.linkedClientId
+          );
+          if (linkedClient) {
+            linkedClient.isConnectedToLink = false;
+          }
+        }
       }
+
+      // if its a controller we need to find the client linked to it and yeet.
+      clientInfo.forEach((client) => {
+        if (client?.linkedClientId === ws.clientId) {
+          client.connectedToLink = false;
+        }
+      });
     });
 
     // we need to tell linked device that its no longer connected to the client
