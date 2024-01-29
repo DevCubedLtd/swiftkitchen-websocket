@@ -73,7 +73,8 @@ io.on("connection", function connection(ws) {
             clientId: ws.clientId,
             deviceId: parsedMessage.deviceId,
             deviceType: deviceTypes.CONTROLLER,
-            isLinkOnline: false,
+            connectedToLink: false,
+            currentlyConnected: true,
             ws,
           });
         }
@@ -136,6 +137,7 @@ io.on("connection", function connection(ws) {
 
         // we need to send a message to both devices saying linked.
         // and who linked too
+
         linkedClient.ws.send(
           JSON.stringify({
             type: messageTypes.LINK_SUCCESS,
@@ -150,6 +152,9 @@ io.on("connection", function connection(ws) {
           })
         );
 
+        thisClient.isConnectedToLink = true;
+        linkedClient.isConnectedToLink = true;
+
         // we need to set both clients as linked in our clientInfo
       }
 
@@ -163,7 +168,8 @@ io.on("connection", function connection(ws) {
             deviceId: parsedMessage.deviceId,
             deviceType: deviceTypes.COMPANION,
             linkedClientId: null,
-            isLinkOnline: false,
+            connectedToLink: false,
+            currentlyConnected: true,
             ws,
           });
         }
@@ -282,8 +288,20 @@ io.on("connection", function connection(ws) {
   });
 
   ws.on("close", function close() {
-    console.log("disconnected");
-  });
+    console.log("disconnected",ws);
+    // find client in clientinfo
+    clientInfo.forEach((client) => {
+      if (client.clientId === ws.clientId) {
+        console.log("found client to disconnect",client.clientId);
+        client.currentlyConnected = false;
+        client.isConnectedToLink = false;
+      }
+    });
+
+    // we need to tell linked device that its no longer connected to the client
+
+
+
 });
 
 app.get("/", (req, res) => {
