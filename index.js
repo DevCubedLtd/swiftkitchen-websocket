@@ -288,20 +288,18 @@ io.on("connection", function connection(ws) {
   });
 
   ws.on("close", function close() {
-    console.log("disconnected",ws);
+    console.log("disconnected", ws);
     // find client in clientinfo
     clientInfo.forEach((client) => {
       if (client.clientId === ws.clientId) {
-        console.log("found client to disconnect",client.clientId);
+        console.log("found client to disconnect", client.clientId);
         client.currentlyConnected = false;
         client.isConnectedToLink = false;
       }
     });
 
     // we need to tell linked device that its no longer connected to the client
-
-
-
+  });
 });
 
 app.get("/", (req, res) => {
