@@ -44,11 +44,12 @@ io.on("connection", function connection(ws) {
   }
 
   ws.on("message", function incoming(message, isBinary) {
-    console.log("string message ", message.toString(), isBinary);
+    // console.log("string message ", message.toString(), isBinary);
 
     // every message should be a parsable object but its worth checking to avoid crashed
     if (tryParseJSONObject(message.toString())) {
       let parsedMessage = JSON.parse(message.toString());
+
       if (parsedMessage?.type !== messageTypes.PONG) {
         console.log(`parse message from ${ws.clientId}`, parsedMessage);
       }
