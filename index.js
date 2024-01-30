@@ -31,6 +31,8 @@ const messageTypes = {
   CHILD_SELECTED: "CHILD_SELECTED",
   LINK_DISCONNECTED: "LINK_DISCONNECTED",
   LINK_CONNECTED: "LINK_CONNECTED",
+  PING: "PING",
+  PONG: "PONG",
 };
 
 io.on("connection", function connection(ws) {
@@ -80,6 +82,7 @@ io.on("connection", function connection(ws) {
             deviceType: deviceTypes.CONTROLLER,
             connectedToLink: false,
             currentlyConnected: true,
+            pongFailures: 0,
             ws,
           });
         }
@@ -127,6 +130,52 @@ io.on("connection", function connection(ws) {
               }
             }
           });
+        }
+      }
+
+      // this is how we register companions, we return them a linking code
+      // if they arnt already registered
+      if (parsedMessage?.type === messageTypes.REQUEST_LINKING_CODE) {
+        if (!thisClient) {
+          /// this device is a companion device.
+          clientInfo.push({
+            clientId: ws.clientId,
+            deviceId: parsedMessage.deviceId,
+            deviceType: deviceTypes.COMPANION,
+            linkedClientId: null,
+            connectedToLink: false,
+            currentlyConnected: true,
+            pongFailures: 0,
+            ws,
+          });
+        }
+
+        ws.send(
+          JSON.stringify({
+            type: messageTypes.LINKING_CODE,
+            code: ws.clientId,
+          })
+        );
+
+        // if this was already linked to someone lets get them both connected!
+        if (thisClient?.linkedClientId) {
+          // we need to send a message to both devices saying linked.
+          // and who linked too
+          let linkedClient = clientInfo.find(
+            (client) => client.clientId === thisClient.linkedClientId
+          );
+          linkedClient.ws.send(
+            JSON.stringify({
+              type: messageTypes.LINK_SUCCESS,
+              deviceId: ws.clientId,
+            })
+          );
+          ws.send(
+            JSON.stringify({
+              type: messageTypes.LINK_SUCCESS,
+              deviceId: parsedMessage.linkedDeviceId,
+            })
+          );
         }
       }
 
@@ -198,51 +247,6 @@ io.on("connection", function connection(ws) {
         thisClient.isConnectedToLink = true;
 
         // we need to set both clients as linked in our clientInfo
-      }
-
-      // this is how we register companions, we return them a linking code
-      // if they arnt already registered
-      if (parsedMessage?.type === messageTypes.REQUEST_LINKING_CODE) {
-        if (!thisClient) {
-          /// this device is a companion device.
-          clientInfo.push({
-            clientId: ws.clientId,
-            deviceId: parsedMessage.deviceId,
-            deviceType: deviceTypes.COMPANION,
-            linkedClientId: null,
-            connectedToLink: false,
-            currentlyConnected: true,
-            ws,
-          });
-        }
-
-        ws.send(
-          JSON.stringify({
-            type: messageTypes.LINKING_CODE,
-            code: ws.clientId,
-          })
-        );
-
-        // if this was already linked to someone lets get them both connected!
-        if (thisClient?.linkedClientId) {
-          // we need to send a message to both devices saying linked.
-          // and who linked too
-          let linkedClient = clientInfo.find(
-            (client) => client.clientId === thisClient.linkedClientId
-          );
-          linkedClient.ws.send(
-            JSON.stringify({
-              type: messageTypes.LINK_SUCCESS,
-              deviceId: ws.clientId,
-            })
-          );
-          ws.send(
-            JSON.stringify({
-              type: messageTypes.LINK_SUCCESS,
-              deviceId: parsedMessage.linkedDeviceId,
-            })
-          );
-        }
       }
 
       // if the companion has no food data it requests it so it can populate
@@ -381,6 +385,22 @@ io.on("connection", function connection(ws) {
           })
         );
       }
+
+      if (parsedMessage?.type === messageTypes.PING) {
+        ws.send(
+          JSON.stringify({
+            type: messageTypes.PONG,
+          })
+        );
+      }
+
+      if (parsedMessage?.type === messageTypes.PONG) {
+        if (!thisClient) {
+          console.log("got pong from unregistered client?");
+          return;
+        }
+        thisClient.pongFailures = 0;
+      }
     }
   });
 
@@ -430,6 +450,61 @@ io.on("connection", function connection(ws) {
     // we need to tell linked device that its no longer connected to the client
   });
 });
+
+// set timeout to ping pong with all clients
+// this is to keep connections open
+setInterval(() => {
+  clientInfo.forEach((client) => {
+    if (client.currentlyConnected) {
+      client.pongFailures++;
+      // 40 seconds
+      if (client.pongFailures > 5) {
+        client.currentlyConnected = false;
+        client.isConnectedToLink = false;
+
+        if (client?.linkedClientId) {
+          // we need to tell linked device that its no longer connected to the client
+          let linkedClient = client.find(
+            (clientFind) => clientFind.clientId === client.linkedClientId
+          );
+
+          if (linkedClient) {
+            linkedClient.isConnectedToLink = false;
+            // TODO: we should also tell the clients theyre no longer connected
+            linkedClient.ws.send(
+              JSON.stringify({
+                type: messageTypes.LINK_DISCONNECTED,
+              })
+            );
+          }
+        }
+
+        // if its a controller we need to find the client linked to it and yeet.
+        clientInfo.forEach((otherClient) => {
+          if (otherClient?.linkedClientId === client.clientId) {
+            otherClient.connectedToLink = false;
+
+            // TODO: we should also tell the clients theyre no longer connected
+            otherClient.ws.send(
+              JSON.stringify({
+                type: messageTypes.LINK_DISCONNECTED,
+              })
+            );
+          }
+        });
+
+        client.pongFailures = 0;
+        return;
+      }
+
+      client.ws.send(
+        JSON.stringify({
+          type: messageTypes.PING,
+        })
+      );
+    }
+  });
+}, 10000);
 
 app.get("/", (req, res) => {
   res.send(`
