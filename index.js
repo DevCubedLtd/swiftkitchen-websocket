@@ -65,7 +65,7 @@ io.on("connection", function connection(ws) {
           "device already registered, reassigning old id: ",
           ws.clientId
         );
-        client.currentlyConnected = true;
+        thisClient.currentlyConnected = true;
       }
 
       // if this is a controller we need to register it,
