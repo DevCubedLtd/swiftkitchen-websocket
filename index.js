@@ -169,7 +169,7 @@ io.on("connection", function connection(ws) {
               deviceId: ws.clientId,
             })
           );
-          client.ws.send(
+          linkedClient.ws.send(
             JSON.stringify({
               type: messageTypes.LINK_CONNECTED,
             })
