@@ -50,9 +50,6 @@ io.on("connection", function connection(ws) {
     if (tryParseJSONObject(message.toString())) {
       let parsedMessage = JSON.parse(message.toString());
 
-      if (parsedMessage?.type !== messageTypes.PONG) {
-        console.log(`parse message from ${ws.clientId}`, parsedMessage);
-      }
       // every message we need to check if this device has registered and make sure its
       // assigned its old ids and stuff
       let thisClient = clientInfo.find(
@@ -66,10 +63,10 @@ io.on("connection", function connection(ws) {
         ).clientId;
         thisClient.ws = ws;
         thisClient.currentlyConnected = true;
-        console.log(
-          "device already registered, reassigning old id: ",
-          ws.clientId
-        );
+      }
+
+      if (parsedMessage?.type !== messageTypes.PONG) {
+        console.log(`${ws.clientId} sent message: `, parsedMessage);
       }
 
       // if this is a controller we need to register it,
@@ -93,6 +90,10 @@ io.on("connection", function connection(ws) {
         // iff this client already existed,
         // look to find if it was linked anywhere
         if (thisClient) {
+          console.log(
+            "device already registered, reassigning old id: ",
+            ws.clientId
+          );
           clientInfo.forEach((client) => {
             if (client.linkedClientId === ws.clientId) {
               // we found the linked client
@@ -158,6 +159,13 @@ io.on("connection", function connection(ws) {
             code: ws.clientId,
           })
         );
+
+        if (thisClient) {
+          console.log(
+            "device already registered, reassigning old id: ",
+            ws.clientId
+          );
+        }
 
         // if this was already linked to someone lets get them both connected!
         if (thisClient?.linkedClientId) {
@@ -458,14 +466,12 @@ io.on("connection", function connection(ws) {
 setInterval(() => {
   clientInfo.forEach((client) => {
     if (client.currentlyConnected) {
-      client.pongFailures++;
-      // 40 seconds
       if (client.pongFailures > 0) {
         console.log(
           `client ${client.clientId} has failed to pong ${client.pongFailures} times`
         );
       }
-
+      client.pongFailures++;
       if (client.pongFailures > 5) {
         client.currentlyConnected = false;
         client.isConnectedToLink = false;
