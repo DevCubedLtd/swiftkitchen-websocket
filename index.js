@@ -49,8 +49,9 @@ io.on("connection", function connection(ws) {
     // every message should be a parsable object but its worth checking to avoid crashed
     if (tryParseJSONObject(message.toString())) {
       let parsedMessage = JSON.parse(message.toString());
-      console.log(`parse message from ${ws.clientId}`, parsedMessage);
-
+      if (parsedMessage?.type !== messageTypes.PONG) {
+        console.log(`parse message from ${ws.clientId}`, parsedMessage);
+      }
       // every message we need to check if this device has registered and make sure its
       // assigned its old ids and stuff
       let thisClient = clientInfo.find(
@@ -63,11 +64,11 @@ io.on("connection", function connection(ws) {
           (client) => client.deviceId === parsedMessage.deviceId
         ).clientId;
         thisClient.ws = ws;
+        thisClient.currentlyConnected = true;
         console.log(
           "device already registered, reassigning old id: ",
           ws.clientId
         );
-        thisClient.currentlyConnected = true;
       }
 
       // if this is a controller we need to register it,
@@ -458,13 +459,19 @@ setInterval(() => {
     if (client.currentlyConnected) {
       client.pongFailures++;
       // 40 seconds
+      if (client.pongFailures > 0) {
+        console.log(
+          `client ${client.clientId} has failed to pong ${client.pongFailures} times`
+        );
+      }
+
       if (client.pongFailures > 5) {
         client.currentlyConnected = false;
         client.isConnectedToLink = false;
 
         if (client?.linkedClientId) {
           // we need to tell linked device that its no longer connected to the client
-          let linkedClient = client.find(
+          let linkedClient = clientInfo.find(
             (clientFind) => clientFind.clientId === client.linkedClientId
           );
 
