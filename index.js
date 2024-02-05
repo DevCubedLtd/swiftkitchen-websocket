@@ -431,6 +431,11 @@ io.on("connection", function connection(ws) {
           );
 
           if (linkedClient) {
+            console.log(
+              "found a linked client to tell to disconnect",
+              linkedClient.clientId
+            );
+
             linkedClient.isConnectedToLink = false;
             // TODO: we should also tell the clients theyre no longer connected
             linkedClient.ws.send(
