@@ -453,6 +453,10 @@ io.on("connection", function connection(ws) {
         if (thisClient?.linkedClientId === client.clientId) {
           thisClient.connectedToLink = false;
 
+          console.log(
+            "found a device linked to this client and am sending message"
+          );
+
           // TODO: we should also tell the clients theyre no longer connected
           thisClient.ws.send(
             JSON.stringify({
