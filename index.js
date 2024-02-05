@@ -114,7 +114,7 @@ io.on("connection", function connection(ws) {
                   })
                 );
 
-                linkedClient.isConnectedToLink = true;
+                client.isConnectedToLink = true;
               }
 
               ws.send(
