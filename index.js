@@ -425,9 +425,10 @@ io.on("connection", function connection(ws) {
         client.isConnectedToLink = false;
 
         if (client?.linkedClientId) {
+          console.log("has linked client");
           // we need to tell linked device that its no longer connected to the client
           let linkedClient = clientInfo.find(
-            (thisClient) => ws.clientId === thisClient.linkedClientId
+            (thisClient) => thisClient.clientId === client.linkedClientId
           );
 
           if (linkedClient) {
