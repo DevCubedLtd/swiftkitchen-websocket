@@ -450,7 +450,7 @@ io.on("connection", function connection(ws) {
 
       // if its a controller we need to find the client linked to it and yeet.
       clientInfo.forEach((thisClient) => {
-        if (client?.linkedClientId === thisClient.clientId) {
+        if (thisClient?.linkedClientId === client.clientId) {
           thisClient.connectedToLink = false;
 
           // TODO: we should also tell the clients theyre no longer connected
