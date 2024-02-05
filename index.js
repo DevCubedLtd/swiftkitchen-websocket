@@ -454,7 +454,9 @@ io.on("connection", function connection(ws) {
           thisClient.connectedToLink = false;
 
           console.log(
-            "found a device linked to this client and am sending message"
+            "found a device linked to this client and am sending message",
+            thisClient.clientId
+            client.clientId
           );
 
           // TODO: we should also tell the clients theyre no longer connected
