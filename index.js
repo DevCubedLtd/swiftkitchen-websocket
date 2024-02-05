@@ -455,7 +455,7 @@ io.on("connection", function connection(ws) {
 
           console.log(
             "found a device linked to this client and am sending message",
-            thisClient.clientId
+            thisClient.clientId,
             client.clientId
           );
 
