@@ -449,12 +449,12 @@ io.on("connection", function connection(ws) {
       }
 
       // if its a controller we need to find the client linked to it and yeet.
-      clientInfo.forEach((client) => {
-        if (client?.linkedClientId === ws.clientId) {
-          client.connectedToLink = false;
+      clientInfo.forEach((thisClient) => {
+        if (client?.linkedClientId === thisClient.clientId) {
+          thisClient.connectedToLink = false;
 
           // TODO: we should also tell the clients theyre no longer connected
-          client.ws.send(
+          thisClient.ws.send(
             JSON.stringify({
               type: messageTypes.LINK_DISCONNECTED,
             })
