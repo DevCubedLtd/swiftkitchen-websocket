@@ -31,6 +31,8 @@ const messageTypes = {
   CHILD_SELECTED: "CHILD_SELECTED",
   LINK_DISCONNECTED: "LINK_DISCONNECTED",
   LINK_CONNECTED: "LINK_CONNECTED",
+  COMPANION_CHANGED_DEPARTMENT: "COMPANION_CHANGED_DEPARTMENT",
+  SELECT_DEPARTMENT: "SELECT_DEPARTMENT",
   PING: "PING",
   PONG: "PONG",
 };
@@ -44,8 +46,6 @@ io.on("connection", function connection(ws) {
   }
 
   ws.on("message", function incoming(message, isBinary) {
-    // console.log("string message ", message.toString(), isBinary);
-
     // every message should be a parsable object but its worth checking to avoid crashed
     if (tryParseJSONObject(message.toString())) {
       let parsedMessage = JSON.parse(message.toString());
@@ -410,6 +410,57 @@ io.on("connection", function connection(ws) {
           return;
         }
         thisClient.pongFailures = 0;
+      }
+
+      if (parsedMessage?.type === messageTypes.COMPANION_CHANGED_DEPARTMENT) {
+        if (!thisClient) {
+          /// this device is a companion device.
+          console.log("selected a child when device isnt registered?");
+          return;
+        }
+
+        // we need to send this to the linked client
+        // we need to find the linked client
+        clientInfo.forEach((client) => {
+          if (thisClient.linkedClientId === client.clientId) {
+            // we found the linked client
+            // we need to send the message to them
+            console.log("found a client to selected child too");
+            client.ws.send(
+              JSON.stringify({
+                type: messageTypes.COMPANION_CHANGED_DEPARTMENT,
+                data: parsedMessage.data,
+              })
+            );
+          }
+        });
+      }
+
+      // this is a master telling to companion to change its currently selected department
+      if (parsedMessage?.type === messageTypes.SELECT_DEPARTMENT) {
+        if (!thisClient) {
+          console.log("change department data received but no client found");
+          return;
+        }
+
+        // we need to send this to the linked client
+        // we need to find the linked client
+        clientInfo.forEach((client) => {
+          if (client.linkedClientId === ws.clientId) {
+            // we found the linked client
+            // we need to send the message to them
+
+            console.log("found a client to send too");
+            client.ws.send(
+              JSON.stringify({
+                type: "SELECT_DEPARTMENT",
+                data: parsedMessage.data,
+              })
+            );
+          }
+        });
+
+        lastFoodData = parsedMessage.data;
       }
     }
   });
