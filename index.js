@@ -211,7 +211,8 @@ io.on("connection", function connection(ws) {
           ws.send(
             JSON.stringify({
               type: messageTypes.LINKING_ERROR,
-              message: "Device not found",
+              message:
+                "No device found with that id, please ensure you got the code correct and both devices are connected to the internet",
             })
           );
           return;
