@@ -208,10 +208,12 @@ io.on("connection", function connection(ws) {
 
         if (!linkedClient) {
           // send error message back to client
-          ws.send(JSON.stringify({
-            type: messageTypes.LINKING_ERROR,
-            message: "Device not found",
-          }))
+          ws.send(
+            JSON.stringify({
+              type: messageTypes.LINKING_ERROR,
+              message: "Device not found",
+            })
+          );
           return;
         }
 
@@ -636,7 +638,7 @@ function generateUniqueId() {
   return Math.random().toString(36).substr(2, 6).toLocaleUpperCase();
 }
 
-function ws.send(clientId, message) {
+function sendMessageToClient(clientId, message) {
   let client = clientInfo.find((client) => client.clientId === clientId);
   if (client && client.readyState === WebSocket.OPEN) {
     client.ws.send(message);
