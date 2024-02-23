@@ -459,13 +459,11 @@ io.on("connection", function connection(ws) {
             client.ws.send(
               JSON.stringify({
                 type: "SELECT_DEPARTMENT",
-                data: parsedMessage.data,
+                data: parsedMessage?.data,
               })
             );
           }
         });
-
-        lastFoodData = parsedMessage.data;
       }
     }
   });
