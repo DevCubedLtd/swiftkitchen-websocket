@@ -66,9 +66,8 @@ io.on("connection", function connection(ws) {
       }
 
       validateToken(parsedMessage).then((isValid) => {
-        console.log("is access token valid?: ", isValid);
-
         if (parsedMessage?.type !== messageTypes.PONG) {
+          console.log("is access token valid?: ", isValid);
           console.log(`${ws.clientId} sent message: `, parsedMessage);
         }
         // if this is a controller we need to register it,
