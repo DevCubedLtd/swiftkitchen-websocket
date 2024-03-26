@@ -1,9 +1,8 @@
 const express = require("express");
-const { createServer } = require("node:http");
-const { join } = require("node:path");
-const { Server } = require("socket.io");
 const http = require("http");
 const WebSocket = require("ws");
+const crypto = require("crypto");
+const connection = require("./database");
 
 const app = express();
 const server = http.createServer(app);
@@ -11,6 +10,7 @@ const io = new WebSocket.Server({ server });
 
 const clientInfo = [];
 let lastFoodData = [];
+var tokenArray = [];
 
 const deviceTypes = {
   COMPANION: "COMPANION",
@@ -65,10 +65,12 @@ io.on("connection", function connection(ws) {
         thisClient.currentlyConnected = true;
       }
 
+      ///////// validate token if it provides one?
+      // isValidated
+
       if (parsedMessage?.type !== messageTypes.PONG) {
         console.log(`${ws.clientId} sent message: `, parsedMessage);
       }
-
       // if this is a controller we need to register it,
       // it might already exist (found above) if so
       // we skip that part and just look to see if we need to auto-link it
@@ -651,4 +653,39 @@ function stripWS(linkedClients) {
     return client;
   });
   return stripped;
+}
+
+async function validateToken(accessToken) {
+  const [tokenId, token] = accessToken.split("|");
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+  // Has token been validated before? Check local array
+  if (tokenArray.includes(tokenHash)) return true;
+
+  // This assumes you have a promisified query method or using a library that supports Promises
+  const queryPromise = new Promise((resolve, reject) => {
+    connection.query(
+      "SELECT id FROM swiftkitchen.personal_access_tokens WHERE id = ? AND token = ?",
+      [tokenId, tokenHash],
+      (error, results, fields) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      }
+    );
+  });
+
+  try {
+    const results = await queryPromise;
+    if (results.length > 0) {
+      // Valid hash, store in tokenArray
+      tokenArray.push(tokenHash);
+      return true;
+    }
+  } catch (error) {
+    console.error("Database query failed:", error);
+  }
+  return false;
 }
