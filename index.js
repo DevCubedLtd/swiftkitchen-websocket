@@ -662,8 +662,6 @@ async function validateToken(parsedMessage) {
   const [tokenId, token] = accessToken.split("|");
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
 
-  console.log("token hash", tokenHash);
-
   // Has token been validated before? Check local array
   if (tokenArray.includes(tokenHash)) return true;
 
