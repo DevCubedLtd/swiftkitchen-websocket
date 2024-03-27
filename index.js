@@ -191,22 +191,32 @@ io.on("connection", function connection(ws) {
         }
 
         // sent by the controller to link to a companion device
+        // we need to send the accesss token to the companion device for reconnects.
         if (parsedMessage?.type === messageTypes.REQUEST_LINK) {
+          if (!isValid) {
+            ws.send(
+              JSON.stringify({
+                type: messageTypes.LINKING_ERROR,
+                message: "Invalid access token",
+              })
+            );
+            return;
+          }
+
           // we need to add this as a client with device type of
           // this following code should NEVER happen
           if (!thisClient) {
             console.log("request link from unregistered client?");
+            return;
           }
 
+          // is can we find the linked client
           let thisLinkedClientId = parsedMessage.linkedClientId.trim();
-
-          // is this device even real
           let linkedClient = clientInfo.find(
             (client) => client.clientId === thisLinkedClientId
           );
 
-          console.log("linked client", linkedClient);
-
+          // if there was no client we have to send linking error
           if (!linkedClient) {
             // send error message back to client
             ws.send(
@@ -219,19 +229,17 @@ io.on("connection", function connection(ws) {
             return;
           }
 
-          // this link should be many companions to one hub so
-          // thats fine
           // linkedClient will be an object so we mutate the reference
           linkedClient.linkedClientId = ws.clientId;
 
           // we need to send a message to both devices saying linked.
           // and who linked too
-
           if (linkedClient.currentlyConnected) {
             linkedClient.ws.send(
               JSON.stringify({
                 type: messageTypes.LINK_SUCCESS,
                 deviceId: ws.clientId,
+                accessToken: parsedMessage.accessToken,
               })
             );
             linkedClient.ws.send(
@@ -243,7 +251,6 @@ io.on("connection", function connection(ws) {
             linkedClient.isConnectedToLink = true;
           }
 
-          // will this only send to this client?
           ws.send(
             JSON.stringify({
               type: messageTypes.LINK_SUCCESS,
