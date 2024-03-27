@@ -53,7 +53,9 @@ io.on("connection", function connection(ws) {
       // every message we need to check if this device has registered and make sure its
       // assigned its old ids and stuff
       let thisClient = clientInfo.find(
-        (client) => client.deviceId === parsedMessage.deviceId
+        (client) =>
+          client.deviceId === parsedMessage.deviceId &&
+          client.accessToken === parsedMessage.accessToken
       );
       // we found it in our local array so we give it the old id for consistency
       // the hope is that we can reopen broken connections
@@ -83,6 +85,7 @@ io.on("connection", function connection(ws) {
               connectedToLink: false,
               currentlyConnected: true,
               pongFailures: 0,
+              accessToken: parsedMessage.accessToken,
               ws,
             });
           }
@@ -149,7 +152,9 @@ io.on("connection", function connection(ws) {
               linkedClientId: null,
               connectedToLink: false,
               currentlyConnected: true,
+              accessToken: parsedMessage?.accessToken || "",
               pongFailures: 0,
+
               ws,
             });
           }
@@ -231,6 +236,7 @@ io.on("connection", function connection(ws) {
 
           // linkedClient will be an object so we mutate the reference
           linkedClient.linkedClientId = ws.clientId;
+          linkedClient.accessToken = parsedMessage?.accessToken;
 
           // we need to send a message to both devices saying linked.
           // and who linked too
