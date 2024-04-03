@@ -610,29 +610,27 @@ setInterval(() => {
   });
 }, 10000);
 
-app.get("/", (req, res) => {
-  res.send(`
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+// app.get("/", (req, res) => {
+//   res.send(`
+//   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+// <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+// <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
 
+// <pre><code class="language-json"> ${JSON.stringify(
+//     stripWS(clientInfo),
+//     null,
+//     2
+//   )}<code/></pre>
 
-<pre><code class="language-json"> ${JSON.stringify(
-    stripWS(clientInfo),
-    null,
-    2
-  )}<code/></pre>
+//   <pre><code class="language-json"> ${JSON.stringify(
+//     stripWS(lastFoodData),
+//     null,
+//     2
+//   )}<code/></pre>
 
-
-  <pre><code class="language-json"> ${JSON.stringify(
-    stripWS(lastFoodData),
-    null,
-    2
-  )}<code/></pre>
-
-  <script>hljs.highlightAll();</script>
-  `);
-});
+//   <script>hljs.highlightAll();</script>
+//   `);
+// });
 
 server.listen(8099, () => {
   console.log("Listening to port 8099");
