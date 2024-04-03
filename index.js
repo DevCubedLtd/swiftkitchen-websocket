@@ -1,11 +1,19 @@
 const express = require("express");
-const http = require("http");
+const https = require("https");
 const WebSocket = require("ws");
 const crypto = require("crypto");
 const connection = require("./database");
 
-const app = express();
-const server = http.createServer(app);
+// const app = express();
+const server = https.createServer({
+  cert: readFileSync(
+    "/etc/letsencrypt/live/qms-ws.swiftkitchen.co.uk/fullchain.pem"
+  ),
+  key: readFileSync(
+    "/etc/letsencrypt/live/qms-ws.swiftkitchen.co.uk/privkey.pem"
+  ),
+});
+
 const io = new WebSocket.Server({ server });
 
 const clientInfo = [];
