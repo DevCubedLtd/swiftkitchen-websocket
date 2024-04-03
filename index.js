@@ -3,6 +3,7 @@ const https = require("https");
 const WebSocket = require("ws");
 const crypto = require("crypto");
 const connection = require("./database");
+const { readFileSync } = require("fs");
 
 // const app = express();
 const server = https.createServer({
