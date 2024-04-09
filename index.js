@@ -51,7 +51,7 @@ io.on("connection", function connection(ws) {
     // when someone connects theyre assigned an id
     // this is because we dont know their device id
     ws.clientId = generateUniqueId();
-    console.log("connected and assigned (possibly temporary) id ", ws.clientId);
+    // console.log("connected and assigned (possibly temporary) id ", ws.clientId);
   }
 
   ws.on("message", function incoming(message, isBinary) {
@@ -78,8 +78,8 @@ io.on("connection", function connection(ws) {
 
       validateToken(parsedMessage).then((isValid) => {
         if (parsedMessage?.type !== messageTypes.PONG) {
-          console.log("is access token valid?: ", isValid);
-          console.log(`${ws.clientId} sent message: `, parsedMessage);
+          // console.log("is access token valid?: ", isValid);
+          // console.log(`${ws.clientId} sent message: `, parsedMessage);
         }
         // if this is a controller we need to register it,
         // it might already exist (found above) if so
@@ -103,10 +103,10 @@ io.on("connection", function connection(ws) {
           // iff this client already existed,
           // look to find if it was linked anywhere
           if (thisClient) {
-            console.log(
-              "device already registered, reassigning old id: ",
-              ws.clientId
-            );
+            // console.log(
+            //   "device already registered, reassigning old id: ",
+            //   ws.clientId
+            // );
             clientInfo.forEach((client) => {
               if (client.linkedClientId === ws.clientId) {
                 // we found the linked client
@@ -176,10 +176,10 @@ io.on("connection", function connection(ws) {
           );
 
           if (thisClient) {
-            console.log(
-              "device already registered, reassigning old id: ",
-              ws.clientId
-            );
+            // console.log(
+            //   "device already registered, reassigning old id: ",
+            //   ws.clientId
+            // );
           }
 
           // if this was already linked to someone lets get them both connected!
@@ -220,7 +220,7 @@ io.on("connection", function connection(ws) {
           // we need to add this as a client with device type of
           // this following code should NEVER happen
           if (!thisClient) {
-            console.log("request link from unregistered client?");
+            // console.log("request link from unregistered client?");
             return;
           }
 
@@ -291,7 +291,7 @@ io.on("connection", function connection(ws) {
         // itself to allow child selection
         if (parsedMessage?.type === messageTypes.REQUEST_FOOD_DATA) {
           if (!thisClient) {
-            console.log("requested food data for unregistered client?");
+            //console.log("requested food data for unregistered client?");
             return;
           }
 
@@ -299,16 +299,16 @@ io.on("connection", function connection(ws) {
             (client) => client.clientId === thisClient.linkedClientId
           );
           if (!linkedClient) {
-            console.log("linked client not found");
+            //console.log("linked client not found");
             return;
           }
-          console.log("reqesting food data from:", linkedClient.clientId);
+          //console.log("reqesting food data from:", linkedClient.clientId);
           linkedClient.ws.send(
             JSON.stringify({
               type: messageTypes.REQUEST_FOOD_DATA,
             })
           );
-          console.log("food data requested");
+          //console.log("food data requested");
 
           // we need to send this to the linked client
         }
@@ -319,7 +319,7 @@ io.on("connection", function connection(ws) {
         // companion so it can update itself accordingly
         if (parsedMessage?.type === messageTypes.FOOD_DATA) {
           if (!thisClient) {
-            console.log("food data received but no client found");
+            //console.log("food data received but no client found");
             return;
           }
 
@@ -330,7 +330,7 @@ io.on("connection", function connection(ws) {
               // we found the linked client
               // we need to send the message to them
 
-              console.log("found a client to send too");
+              //console.log("found a client to send too");
               client.ws.send(
                 JSON.stringify({
                   type: "FOOD_DATA",
@@ -348,7 +348,7 @@ io.on("connection", function connection(ws) {
         if (parsedMessage?.type === messageTypes.CHILD_SELECTED) {
           if (!thisClient) {
             /// this device is a companion device.
-            console.log("selected a child when device isnt registered?");
+            //console.log("selected a child when device isnt registered?");
             return;
           }
 
@@ -358,7 +358,7 @@ io.on("connection", function connection(ws) {
             if (thisClient.linkedClientId === client.clientId) {
               // we found the linked client
               // we need to send the message to them
-              console.log("found a client to selected child too");
+              //console.log("found a client to selected child too");
               client.ws.send(
                 JSON.stringify({
                   type: messageTypes.CHILD_SELECTED,
@@ -371,7 +371,7 @@ io.on("connection", function connection(ws) {
 
         if (parsedMessage?.type === messageTypes.REQUEST_UNLINK) {
           if (!thisClient) {
-            console.log("requested unlink for unregistered client?");
+            //console.log("requested unlink for unregistered client?");
             return;
           }
 
@@ -434,7 +434,7 @@ io.on("connection", function connection(ws) {
 
         if (parsedMessage?.type === messageTypes.PONG) {
           if (!thisClient) {
-            console.log("got pong from unregistered client?");
+            //console.log("got pong from unregistered client?");
             return;
           }
           thisClient.pongFailures = 0;
@@ -443,7 +443,7 @@ io.on("connection", function connection(ws) {
         if (parsedMessage?.type === messageTypes.COMPANION_CHANGED_DEPARTMENT) {
           if (!thisClient) {
             /// this device is a companion device.
-            console.log("selected a child when device isnt registered?");
+            //console.log("selected a child when device isnt registered?");
             return;
           }
 
@@ -453,7 +453,7 @@ io.on("connection", function connection(ws) {
             if (thisClient.linkedClientId === client.clientId) {
               // we found the linked client
               // we need to send the message to them
-              console.log("found a client to selected child too");
+              //console.log("found a client to selected child too");
               client.ws.send(
                 JSON.stringify({
                   type: messageTypes.COMPANION_CHANGED_DEPARTMENT,
@@ -467,7 +467,7 @@ io.on("connection", function connection(ws) {
         // this is a master telling to companion to change its currently selected department
         if (parsedMessage?.type === messageTypes.SELECT_DEPARTMENT) {
           if (!thisClient) {
-            console.log("change department data received but no client found");
+            //console.log("change department data received but no client found");
             return;
           }
 
@@ -478,7 +478,7 @@ io.on("connection", function connection(ws) {
               // we found the linked client
               // we need to send the message to them
 
-              console.log("found a client to send too");
+              //console.log("found a client to send too");
               client.ws.send(
                 JSON.stringify({
                   type: "SELECT_DEPARTMENT",
@@ -493,27 +493,27 @@ io.on("connection", function connection(ws) {
   });
 
   ws.on("close", function close() {
-    console.log("disconnected", ws);
+    //console.log("disconnected", ws);
     // find client in clientinfo
 
     clientInfo.forEach((client) => {
       if (client.clientId === ws.clientId) {
-        console.log("found client to disconnect", client.clientId);
+        //console.log("found client to disconnect", client.clientId);
         client.currentlyConnected = false;
         client.isConnectedToLink = false;
 
         if (client?.linkedClientId) {
-          console.log("has linked client");
+          //console.log("has linked client");
           // we need to tell linked device that its no longer connected to the client
           let linkedClient = clientInfo.find(
             (thisClient) => thisClient.clientId === client.linkedClientId
           );
 
           if (linkedClient) {
-            console.log(
-              "found a linked client to tell to disconnect",
-              linkedClient.clientId
-            );
+            // console.log(
+            //   "found a linked client to tell to disconnect",
+            //   linkedClient.clientId
+            // );
 
             linkedClient.isConnectedToLink = false;
             // TODO: we should also tell the clients theyre no longer connected
@@ -531,11 +531,11 @@ io.on("connection", function connection(ws) {
         if (thisClient?.linkedClientId === client.clientId) {
           thisClient.connectedToLink = false;
 
-          console.log(
-            "found a device linked to this client and am sending message",
-            thisClient.clientId,
-            client.clientId
-          );
+          // console.log(
+          //   "found a device linked to this client and am sending message",
+          //   thisClient.clientId,
+          //   client.clientId
+          // );
 
           // TODO: we should also tell the clients theyre no longer connected
           thisClient.ws.send(
@@ -557,9 +557,9 @@ setInterval(() => {
   clientInfo.forEach((client) => {
     if (client.currentlyConnected) {
       if (client.pongFailures > 0) {
-        console.log(
-          `client ${client.clientId} has failed to pong ${client.pongFailures} times`
-        );
+        // console.log(
+        //   `client ${client.clientId} has failed to pong ${client.pongFailures} times`
+        // );
       }
       client.pongFailures++;
       if (client.pongFailures > 5) {
