@@ -42,6 +42,7 @@ const messageTypes = {
   LINK_CONNECTED: "LINK_CONNECTED",
   COMPANION_CHANGED_DEPARTMENT: "COMPANION_CHANGED_DEPARTMENT",
   SELECT_DEPARTMENT: "SELECT_DEPARTMENT",
+  SELECT_MENU: "SELECT_MENU",
   PING: "PING",
   PONG: "PONG",
 };
@@ -482,6 +483,30 @@ io.on("connection", function connection(ws) {
               client.ws.send(
                 JSON.stringify({
                   type: "SELECT_DEPARTMENT",
+                  data: parsedMessage?.data,
+                })
+              );
+            }
+          });
+        }
+
+        if (parsedMessage?.type === messageTypes.SELECT_MENU) {
+          if (!thisClient) {
+            //console.log("change department data received but no client found");
+            return;
+          }
+
+          // we need to send this to the linked client
+          // we need to find the linked client
+          clientInfo.forEach((client) => {
+            if (client.linkedClientId === ws.clientId) {
+              // we found the linked client
+              // we need to send the message to them
+
+              //console.log("found a client to send too");
+              client.ws.send(
+                JSON.stringify({
+                  type: "SELECT_MENU",
                   data: parsedMessage?.data,
                 })
               );
