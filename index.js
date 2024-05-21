@@ -5,14 +5,11 @@ const crypto = require("crypto");
 const connection = require("./database");
 const { readFileSync } = require("fs");
 
-// const app = express();
+const domain = process.env.DOMAIN || "localhost";
+
 const server = https.createServer({
-  cert: readFileSync(
-    "/etc/letsencrypt/live/qms-ws.swiftkitchen.co.uk/fullchain.pem"
-  ),
-  key: readFileSync(
-    "/etc/letsencrypt/live/qms-ws.swiftkitchen.co.uk/privkey.pem"
-  ),
+  cert: readFileSync("/etc/letsencrypt/live/" + domain + "/fullchain.pem"),
+  key: readFileSync("/etc/letsencrypt/live/" + domain + "/privkey.pem"),
 });
 
 const io = new WebSocket.Server({ server });
