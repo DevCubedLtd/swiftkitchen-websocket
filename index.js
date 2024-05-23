@@ -710,7 +710,7 @@ async function validateToken(parsedMessage) {
   // This assumes you have a promisified query method or using a library that supports Promises
   const queryPromise = new Promise((resolve, reject) => {
     connection.query(
-      "SELECT id FROM swiftkitchen.personal_access_tokens WHERE id = ? AND token = ?",
+      "SELECT id FROM personal_access_tokens WHERE id = ? AND token = ?",
       [tokenId, tokenHash],
       (error, results, fields) => {
         if (error) {
