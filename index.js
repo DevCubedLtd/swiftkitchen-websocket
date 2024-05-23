@@ -546,27 +546,20 @@ io.on("connection", function connection(ws) {
             );
           }
         }
+
+        // if its a controller we need to find the client linked to it and yeet.
+        clientInfo.forEach((thisClient) => {
+          if (thisClient?.linkedClientId === client.clientId) {
+            thisClient.connectedToLink = false;
+            // TODO: we should also tell the clients theyre no longer connected
+            thisClient.ws.send(
+              JSON.stringify({
+                type: messageTypes.LINK_DISCONNECTED,
+              })
+            );
+          }
+        });
       }
-
-      // if its a controller we need to find the client linked to it and yeet.
-      clientInfo.forEach((thisClient) => {
-        if (thisClient?.linkedClientId === client.clientId) {
-          thisClient.connectedToLink = false;
-
-          // console.log(
-          //   "found a device linked to this client and am sending message",
-          //   thisClient.clientId,
-          //   client.clientId
-          // );
-
-          // TODO: we should also tell the clients theyre no longer connected
-          thisClient.ws.send(
-            JSON.stringify({
-              type: messageTypes.LINK_DISCONNECTED,
-            })
-          );
-        }
-      });
     });
 
     // we need to tell linked device that its no longer connected to the client
