@@ -647,8 +647,8 @@ setInterval(() => {
 //   `);
 // });
 
-server.listen(80, () => {
-  console.log("Listening to port 80");
+server.listen(443, () => {
+  console.log("Listening to port 443");
 });
 
 function tryParseJSONObject(jsonString) {
