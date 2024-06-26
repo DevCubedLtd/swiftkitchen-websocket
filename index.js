@@ -4,6 +4,7 @@ const WebSocket = require("ws");
 const crypto = require("crypto");
 const connection = require("./database");
 const { readFileSync } = require("fs");
+const { parse } = require("path");
 
 const domain = process.env.DOMAIN || "localhost";
 
@@ -26,6 +27,9 @@ if (!isLocalDevelopment) {
 const clientInfo = [];
 let lastFoodData = [];
 var tokenArray = [];
+
+const companionDevices = [];
+const checklistDevices = [];
 
 const deviceTypes = {
   COMPANION: "COMPANION",
@@ -58,7 +62,6 @@ io.on("connection", function connection(ws) {
     // when someone connects theyre assigned an id
     // this is because we dont know their device id
     ws.clientId = generateUniqueId();
-    // console.log("connected and assigned (possibly temporary) id ", ws.clientId);
   }
 
   ws.on("message", function incoming(message, isBinary) {
@@ -72,13 +75,36 @@ io.on("connection", function connection(ws) {
 
 function handleIncoming(ws, message, isBinary) {
   // every message should be a parsable object but its worth checking to avoid crashed
-
   if (!tryParseJSONObject(message.toString())) {
-    console.log("message not parsable: ", message.toString());
+    console.log("Imcoming message not parsable: ", message.toString());
     return;
   }
 
   let parsedMessage = JSON.parse(message.toString());
+
+  if (!parsedMessage.isCompanion && !parsedMessage.isChecklist) {
+    console.log(
+      "Device connected not identifying as companion or checklist. Likely using an old version of the app"
+    );
+    return;
+  }
+
+  let knownClient;
+
+  if (parsedMessage.isCompanion) {
+    knownClient = companionDevices.find(
+      (client) =>
+        client.deviceId === parsedMessage.deviceId &&
+        client.accessToken === parsedMessage.accessToken
+    );
+  }
+  if (parsedMessage.isChecklist) {
+    knownClient = checklistDevices.find(
+      (client) =>
+        client.deviceId === parsedMessage.deviceId &&
+        client.accessToken === parsedMessage.accessToken
+    );
+  }
 
   // every message we need to check if this device has registered and make sure its
   // assigned its old ids and stuff
@@ -692,11 +718,6 @@ function stripWS(linkedClients) {
 }
 
 async function validateToken(parsedMessage) {
-  if (isLocalDevelopment) {
-    console.log("Running development mode so skipping token validation");
-    return true;
-  }
-
   const accessToken = parsedMessage?.accessToken;
   if (!accessToken) return false;
 
