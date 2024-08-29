@@ -29,3 +29,5 @@ if (process.env.DB_HOST) {
   console.error(`Database connection failed. Please check your configuration`);
   process.exit(1);
 }
+
+module.exports = pool;
