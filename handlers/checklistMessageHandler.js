@@ -113,7 +113,6 @@ function checklistMessageHandler(
     }
 
     if (message?.type === messageTypes.REQUEST_UNLINK) {
-      //TODO
       let checklistDevice = checklistDevices[message.deviceId];
       let companionDevice =
         companionDevices[checklistDevices[message.deviceId].linkedTo];
@@ -132,7 +131,6 @@ function checklistMessageHandler(
     }
 
     if (message?.type === messageTypes.SELECT_DEPARTMENT) {
-      //TODO
       let companionDevice =
         companionDevices[checklistDevices[message.deviceId].linkedTo];
 
@@ -145,7 +143,6 @@ function checklistMessageHandler(
     }
 
     if (message?.type === messageTypes.SELECT_MENU) {
-      //TODO
       let companionDevice =
         companionDevices[checklistDevices[message.deviceId].linkedTo];
 
@@ -158,7 +155,6 @@ function checklistMessageHandler(
     }
 
     if (message?.type === messageTypes.FOOD_DATA) {
-      //TODO
       let companionDevice =
         companionDevices[checklistDevices[message.deviceId].linkedTo];
 
