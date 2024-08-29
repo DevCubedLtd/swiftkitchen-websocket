@@ -33,7 +33,41 @@ function checklistMessageHandler(
       checklistDevices[message.deviceId] = {
         ws,
         linkedTo: null,
+        lastKnownLinkedTo: null,
       };
+    } else {
+      checklistDevices[message.deviceId].ws = ws;
+    }
+
+    if (message?.type === messageTypes.REGISTER_CONTROLLER) {
+      // attempt relink
+      // if the devices has a lastKnownLinkTo,
+      // try and find that in the companion devices
+      // if found, check linkedTo is null,
+
+      // if so relink the devices
+
+      let lastKnownLinkedTo =
+        checklistDevices[message.deviceId].lastKnownLinkedTo;
+      let companionDevice = companionDevices[lastKnownLinkedTo];
+
+      if (companionDevice) {
+        if (companionDevice.linkedTo === null) {
+          checklistDevices[message.deviceId].linkedTo = lastKnownLinkedTo;
+          companionDevice.linkedTo = message.deviceId;
+          checklistDevices[message.deviceId].lastKnownLinkedTo =
+            lastKnownLinkedTo;
+          companionDevice.lastKnownLinkedTo = message.deviceId;
+
+          sendLinkConnected(ws);
+          sendLinkConnected(companionDevice.ws);
+          sendLinkSuccess(
+            companionDevice.ws,
+            message.deviceId,
+            message.accessToken
+          );
+        }
+      }
     }
 
     if (message?.type === messageTypes.REQUEST_LINK) {
@@ -62,6 +96,11 @@ function checklistMessageHandler(
       // link devices
       checklistDevices[message.deviceId].linkedTo = foundCompanionDeviceId;
       companionDevices[foundCompanionDeviceId].linkedTo = message.deviceId;
+
+      checklistDevices[message.deviceId].lastKnownLinkedTo =
+        foundCompanionDeviceId;
+      companionDevices[foundCompanionDeviceId].lastKnownLinkedTo =
+        message.deviceId;
 
       // so i need to tell everyone that theyre linked?
       sendLinkConnected(ws);

@@ -84,6 +84,11 @@ function sendChecklistDepartmentSelected(ws, department) {
     })
   );
 }
+
+function sendLinkDisconnected(ws) {
+  ws.send(JSON.stringify({ type: messageTypes.LINK_DISCONNECTED }));
+}
+
 module.exports = {
   sendLinkingCode,
   sendFoodData,
@@ -99,4 +104,5 @@ module.exports = {
   sendFoodData,
   sendLinkingError,
   sendChecklistDepartmentSelected,
+  sendLinkDisconnected,
 };

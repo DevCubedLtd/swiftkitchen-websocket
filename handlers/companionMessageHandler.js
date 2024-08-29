@@ -3,10 +3,13 @@ const {
   sendRequestFoodData,
   sendCompanionChildSelected,
   sendCompanionChangedDepartment,
+  sendLinkConnected,
+  sendLinkSuccess,
 } = require("../broadcast/broadcast");
 const { messageTypes } = require("../constants/messageTypes");
 const generateUniqueId = require("../utils/generateUniqueId");
 const { stripWSFromJSON } = require("../utils/stripWSFromJSON");
+
 function companionMessageHandler(
   ws,
   message,
@@ -18,12 +21,31 @@ function companionMessageHandler(
       ws,
       linkedTo: null,
       linkingCode: null,
+      lastKnownLinkedTo: null,
     };
+  } else {
+    companionDevices[message.deviceId].ws = ws;
   }
 
   if (message.type === messageTypes.REQUEST_LINKING_CODE) {
     if (companionDevices[message.deviceId].linkingCode) {
       sendLinkingCode(ws, companionDevices[message.deviceId].linkingCode);
+
+      // attempt to relink the devices
+      let lastKnownLinkedTo =
+        companionDevices[message.deviceId].lastKnownLinkedTo;
+      let checklistDevice = checklistDevices[lastKnownLinkedTo];
+
+      if (checklistDevice) {
+        if (checklistDevice.linkedTo === null) {
+          checklistDevice.linkedTo = message.deviceId;
+          companionDevices[message.deviceId].linkedTo = lastKnownLinkedTo;
+          sendLinkConnected(ws);
+          sendLinkConnected(checklistDevice.ws);
+          sendLinkSuccess(ws, message.deviceId, message.accessToken);
+        }
+      }
+
       return;
     }
     let generatedLinkingCode = generateUniqueId(companionDevices);

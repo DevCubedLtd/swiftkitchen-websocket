@@ -13,6 +13,7 @@ const messageTypes = require("./constants/messageTypes");
 const generateUniqueId = require("./utils/generateUniqueId");
 
 const { messageHandler } = require("./handlers/messageHandler");
+const { sendLinkDisconnected } = require("./broadcast/broadcast");
 
 const domain = process.env.DOMAIN || "localhost";
 const isLocalDevelopment = !process.env.DOMAIN;
@@ -62,73 +63,37 @@ if (!isLocalDevelopment) {
 }
 
 function handleClose(ws) {
-  //console.log("disconnected", ws);
-  // find client in clientinfo
-  // companionDevices.forEach((companion) => {
-  //   if (companion.ws === ws) {
-  //     //console.log("found companion to disconnect", companion.clientId);
-  //     companion.currentlyConnected = false;
-  //     companion.connectedToLink = false;
-  //     if (companion?.linkedClientId) {
-  //       let linkedClient = checklistDevices.find(
-  //         (checklistClient) =>
-  //           checklistClient.clientId === companion.linkedClientId
-  //       );
-  //       if (linkedClient) {
-  //         linkedClient.connectedToLink = false;
-  //         linkedClient.ws.send(
-  //           JSON.stringify({
-  //             type: messageTypes.LINK_DISCONNECTED,
-  //           })
-  //         );
-  //       }
-  //     }
-  //   }
-  // });
-  // checklistDevices.forEach((checklist) => {
-  //   if (checklist.ws === ws) {
-  //     //console.log("found checklist to disconnect", checklist.clientId);
-  //     checklist.currentlyConnected = false;
-  //     checklist.connectedToLink = false;
-  //     let linkedClient = companionDevices.find(
-  //       (companionDevice) =>
-  //         companionDevice.linkedClientId === checklist.clientId
-  //     );
-  //     if (linkedClient) {
-  //       linkedClient.connectedToLink = false;
-  //       linkedClient.ws.send(
-  //         JSON.stringify({
-  //           type: messageTypes.LINK_DISCONNECTED,
-  //         })
-  //       );
-  //     }
-  //   }
-  // });
+  const disconnectedCompanion = findDisconnectedDevice(companionDevices, ws);
+  const disconnectedChecklist = findDisconnectedDevice(checklistDevices, ws);
+
+  if (disconnectedCompanion) {
+    handleDeviceDisconnection(disconnectedCompanion, checklistDevices);
+  } else if (disconnectedChecklist) {
+    handleDeviceDisconnection(disconnectedChecklist, companionDevices);
+  }
 }
 
-async function validateToken(parsedMessage) {
-  const accessToken = parsedMessage?.accessToken;
-  if (!accessToken) return false;
+function findDisconnectedDevice(devices, ws) {
+  return Object.values(devices).find((device) => device.ws === ws);
+}
 
-  const [tokenId, token] = accessToken.split("|");
-  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+function handleDeviceDisconnection(disconnectedDevice, linkedDevices) {
+  const { linkedTo } = disconnectedDevice;
 
-  // Has token been validated before? Check local array
-  if (tokenArray.includes(tokenHash)) return true;
+  sendDisconnectionMessage(disconnectedDevice.ws);
 
-  try {
-    const results = await db.query(
-      "SELECT id FROM personal_access_tokens WHERE id = ? AND token = ?",
-      [tokenId, tokenHash]
-    );
-
-    if (results.length > 0) {
-      // Valid hash, store in tokenArray
-      tokenArray.push(tokenHash);
-      return true;
-    }
-  } catch (error) {
-    console.error("Database query failed:", error);
+  if (linkedTo && linkedDevices[linkedTo]) {
+    const linkedDevice = linkedDevices[linkedTo];
+    sendDisconnectionMessage(linkedDevice.ws);
+    linkedDevice.linkedTo = null;
   }
-  return false;
+
+  disconnectedDevice.linkedTo = null;
+  disconnectedDevice.ws = null;
+}
+
+function sendDisconnectionMessage(ws) {
+  if (ws) {
+    sendLinkDisconnected(ws);
+  }
 }
