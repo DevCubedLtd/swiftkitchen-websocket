@@ -39,7 +39,15 @@ if (!isLocalDevelopment) {
 
 io.on("connection", function connection(ws) {
   ws.on("message", function incoming(message, isBinary) {
-    messageHandler(ws, message, isBinary, companionDevices, checklistDevices);
+    messageHandler(
+      ws,
+      message,
+      isBinary,
+      companionDevices,
+      checklistDevices,
+      tokenArray,
+      isLocalDevelopment
+    );
   });
 
   ws.on("close", function close() {

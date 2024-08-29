@@ -7,7 +7,9 @@ function messageHandler(
   message,
   isBinary,
   companionDevices,
-  checklistDevices
+  checklistDevices,
+  tokenArray,
+  isLocalDevelopment
 ) {
   let parsedMessage = checkMessageSafety(message);
   if (!parsedMessage) return;
@@ -24,7 +26,9 @@ function messageHandler(
       ws,
       parsedMessage,
       checklistDevices,
-      companionDevices
+      companionDevices,
+      tokenArray,
+      isLocalDevelopment
     );
   }
 }

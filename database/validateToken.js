@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 const db = require("../database/database");
 
-async function validateToken(parsedMessage) {
+async function validateToken(parsedMessage, tokenArray) {
   const accessToken = parsedMessage?.accessToken;
   if (!accessToken) return false;
 

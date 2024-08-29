@@ -1,10 +1,12 @@
 const {
   sendLinkingCode,
   sendRequestFoodData,
+  sendCompanionChildSelected,
+  sendCompanionChangedDepartment,
 } = require("../broadcast/broadcast");
 const { messageTypes } = require("../constants/messageTypes");
 const generateUniqueId = require("../utils/generateUniqueId");
-
+const { stripWSFromJSON } = require("../utils/stripWSFromJSON");
 function companionMessageHandler(
   ws,
   message,
@@ -31,12 +33,13 @@ function companionMessageHandler(
   }
 
   if (message?.type === messageTypes.COMPANION_CHANGED_DEPARTMENT) {
-    if (!companionDevices.linkedTo) {
+    if (!companionDevices[message.deviceId].linkedTo) {
       console.log("Companion is not linked to a client");
       return;
     }
 
-    let linkedClient = checklistDevices[companionDevices.linkedTo];
+    let linkedClient =
+      checklistDevices[companionDevices[message.deviceId].linkedTo];
     if (!linkedClient || !linkedClient.ws) {
       console.log("Linked client not found");
       return;
@@ -47,13 +50,18 @@ function companionMessageHandler(
   }
 
   if (message?.type === messageTypes.CHILD_SELECTED) {
-    if (!companionDevices.linkedTo) {
+    if (!companionDevices[message.deviceId].linkedTo) {
       console.log("Companion is not linked to a client");
       return;
     }
 
-    let linkedClient = checklistDevices[companionDevices.linkedTo];
+    let linkedClient =
+      checklistDevices[companionDevices[message.deviceId].linkedTo];
     if (!linkedClient || !linkedClient.ws) {
+      console.log({
+        companions: stripWSFromJSON(companionDevices),
+        checklist: stripWSFromJSON(checklistDevices),
+      });
       console.log("Linked client not found");
       return;
     }
@@ -63,12 +71,13 @@ function companionMessageHandler(
   }
 
   if (message?.type === messageTypes.REQUEST_FOOD_DATA) {
-    if (!companionDevices.linkedTo) {
+    if (!companionDevices[message.deviceId].linkedTo) {
       console.log("Companion is not linked to a client");
       return;
     }
 
-    let linkedClient = checklistDevices[companionDevices.linkedTo];
+    let linkedClient =
+      checklistDevices[companionDevices[message.deviceId].linkedTo];
     if (!linkedClient || !linkedClient.ws) {
       console.log("Linked client not found");
       return;

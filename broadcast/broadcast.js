@@ -8,20 +8,20 @@ function sendLinkingCode(ws, linkingCode) {
 }
 
 function sendFoodData(ws, foodData) {
-  ws.send(JSON.stringify({ type: messageTypes.FOOD_DATA, foodData }));
+  ws.send(JSON.stringify({ type: messageTypes.FOOD_DATA, data: foodData }));
 }
 
 function sendCompanionChangedDepartment(ws, department) {
   ws.send(
     JSON.stringify({
       type: messageTypes.COMPANION_CHANGED_DEPARTMENT,
-      department,
+      data: department,
     })
   );
 }
 
 function sendCompanionChildSelected(ws, child) {
-  ws.send(JSON.stringify({ type: messageTypes.CHILD_SELECTED, child }));
+  ws.send(JSON.stringify({ type: messageTypes.CHILD_SELECTED, data: child }));
 }
 
 function sendRequestFoodData(ws) {
@@ -45,6 +45,45 @@ function sendLinkConnected(ws) {
   ws.send(JSON.stringify({ type: messageTypes.LINK_CONNECTED }));
 }
 
+function sendLinkSuccess(ws, deviceId, accessToken) {
+  ws.send(
+    JSON.stringify({
+      type: messageTypes.LINK_SUCCESS,
+      deviceId,
+      accessToken,
+    })
+  );
+}
+
+function sendUnlinkSuccess(ws) {
+  ws.send(JSON.stringify({ type: messageTypes.UNLINK_SUCCESS }));
+}
+
+function sendCompanionChangedDepartment(ws, changeDeparmentData) {
+  ws.send(
+    JSON.stringify({
+      type: messageTypes.COMPANION_CHANGED_DEPARTMENT,
+      data: changeDeparmentData,
+    })
+  );
+}
+
+function sendSelectMenu(ws, menuData) {
+  ws.send(JSON.stringify({ type: messageTypes.SELECT_MENU, data: menuData }));
+}
+
+function sendFoodData(ws, foodData) {
+  ws.send(JSON.stringify({ type: messageTypes.FOOD_DATA, data: foodData }));
+}
+
+function sendChecklistDepartmentSelected(ws, department) {
+  ws.send(
+    JSON.stringify({
+      type: messageTypes.SELECT_DEPARTMENT,
+      data: department,
+    })
+  );
+}
 module.exports = {
   sendLinkingCode,
   sendFoodData,
@@ -52,4 +91,12 @@ module.exports = {
   sendCompanionChildSelected,
   sendRequestFoodData,
   sendLinkConnected,
+  sendInvalidToken,
+  sendLinkSuccess,
+  sendCompanionChangedDepartment,
+  sendUnlinkSuccess,
+  sendSelectMenu,
+  sendFoodData,
+  sendLinkingError,
+  sendChecklistDepartmentSelected,
 };
