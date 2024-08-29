@@ -308,6 +308,8 @@ function handleControllerMessages(ws, parsedMessage, knownClient, isValid) {
     // if there was no client we have to send linking error
     if (!linkedClients.length) {
       // send error message back to client
+      console.log(companionDevices);
+
       knownClient.ws.send(
         JSON.stringify({
           type: messageTypes.LINKING_ERROR,
@@ -541,11 +543,6 @@ function handleClose(ws) {
             checklistClient.clientId === companion.linkedClientId
         );
         if (linkedClient) {
-          // console.log(
-          //   "found a linked client to tell to disconnect",
-          //   linkedClient.clientId
-          // );
-
           linkedClient.connectedToLink = false;
           linkedClient.ws.send(
             JSON.stringify({
