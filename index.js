@@ -2,7 +2,7 @@ const express = require("express");
 const https = require("https");
 const WebSocket = require("ws");
 const crypto = require("crypto");
-const pool = require("./database");
+const db = require("./database");
 const { readFileSync } = require("fs");
 const { parse } = require("path");
 
@@ -627,7 +627,7 @@ async function validateToken(parsedMessage) {
   if (tokenArray.includes(tokenHash)) return true;
 
   try {
-    const results = await pool.query(
+    const results = await db.query(
       "SELECT id FROM personal_access_tokens WHERE id = ? AND token = ?",
       [tokenId, tokenHash]
     );

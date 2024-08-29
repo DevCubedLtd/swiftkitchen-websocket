@@ -1,4 +1,4 @@
-const mysql = require("mysql2");
+const mysql = require("mysql2/promise");
 require("dotenv").config();
 
 let pool;
@@ -15,12 +15,20 @@ if (process.env.DB_HOST) {
       queueLimit: 0,
     });
 
-    // Convert pool to use promises
-    const promisePool = pool.promise();
-
     console.log("Connected to the database successfully.");
 
-    module.exports = promisePool;
+    module.exports = {
+      query: async (sql, params) => {
+        try {
+          const [results] = await pool.query(sql, params);
+          return results;
+        } catch (error) {
+          console.error("Database query error:", error);
+          throw error;
+        }
+      },
+      pool: pool,
+    };
   } catch (error) {
     console.error("Error creating database pool:", error);
     process.exit(1);
@@ -29,5 +37,3 @@ if (process.env.DB_HOST) {
   console.error(`Database connection failed. Please check your configuration`);
   process.exit(1);
 }
-
-module.exports = pool;
