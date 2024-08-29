@@ -626,23 +626,12 @@ async function validateToken(parsedMessage) {
   // Has token been validated before? Check local array
   if (tokenArray.includes(tokenHash)) return true;
 
-  // This assumes you have a promisified query method or using a library that supports Promises
-  const queryPromise = new Promise((resolve, reject) => {
-    connection.query(
-      "SELECT id FROM personal_access_tokens WHERE id = ? AND token = ?",
-      [tokenId, tokenHash],
-      (error, results, fields) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(results);
-        }
-      }
-    );
-  });
-
   try {
-    const results = await queryPromise;
+    const results = await db.query(
+      "SELECT id FROM personal_access_tokens WHERE id = ? AND token = ?",
+      [tokenId, tokenHash]
+    );
+
     if (results.length > 0) {
       // Valid hash, store in tokenArray
       tokenArray.push(tokenHash);
