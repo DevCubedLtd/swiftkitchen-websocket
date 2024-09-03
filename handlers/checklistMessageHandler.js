@@ -19,7 +19,7 @@ function checklistMessageHandler(
   tokenArray,
   isLocalDevelopment
 ) {
-  console.log("Checklist message received: ", message);
+  console.log("Checklist message received:", message?.deviceId);
 
   // before we do anything, validate the token
   validateToken(message, tokenArray).then((isValid) => {
@@ -163,7 +163,14 @@ function checklistMessageHandler(
         return;
       }
 
-      sendFoodData(companionDevice.ws, message.data);
+      // TODO IMMEDIATELY
+      if (companionDevice?.ws) {
+        sendFoodData(companionDevice.ws, message.data);
+      } else {
+        console.log(
+          "Tried to send to companion but companion didnt have a ws connection."
+        );
+      }
     }
   });
 }

@@ -27,6 +27,8 @@ function companionMessageHandler(
     companionDevices[message.deviceId].ws = ws;
   }
 
+  console.log("Received companion message", message?.deviceId);
+
   if (message.type === messageTypes.REQUEST_LINKING_CODE) {
     if (companionDevices[message.deviceId].linkingCode) {
       sendLinkingCode(ws, companionDevices[message.deviceId].linkingCode);
