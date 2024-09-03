@@ -67,9 +67,19 @@ function handleClose(ws) {
   const disconnectedChecklist = findDisconnectedDevice(checklistDevices, ws);
 
   if (disconnectedCompanion) {
-    handleDeviceDisconnection(disconnectedCompanion, checklistDevices);
+    handleDeviceDisconnection(
+      disconnectedCompanion,
+      checklistDevices,
+      companionDevices,
+      ws
+    );
   } else if (disconnectedChecklist) {
-    handleDeviceDisconnection(disconnectedChecklist, companionDevices);
+    handleDeviceDisconnection(
+      disconnectedChecklist,
+      companionDevices,
+      checklistDevices,
+      ws
+    );
   }
 }
 
@@ -77,8 +87,19 @@ function findDisconnectedDevice(devices, ws) {
   return Object.values(devices).find((device) => device.ws === ws);
 }
 
-function handleDeviceDisconnection(disconnectedDevice, linkedDevices) {
-  console.log("disconnecting device: ", disconnectedDevice?.deviceId);
+function handleDeviceDisconnection(
+  disconnectedDevice,
+  linkedDevices,
+  thisDeviceObj,
+  ws
+) {
+  let keys = Object.keys(thisDeviceObj);
+  let index = Object.values(thisDeviceObj).findIndex(
+    (device) => device.ws === ws
+  );
+  let deviceId = keys[index]?.substr(0, 8);
+  console.log("Server msg   : " + deviceId + " has disconnected");
+
   const { linkedTo } = disconnectedDevice;
 
   sendDisconnectionMessage(disconnectedDevice.ws);
