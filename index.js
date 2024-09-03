@@ -78,6 +78,7 @@ function findDisconnectedDevice(devices, ws) {
 }
 
 function handleDeviceDisconnection(disconnectedDevice, linkedDevices) {
+  console.log("disconnecting device: ", disconnectedDevice?.deviceId);
   const { linkedTo } = disconnectedDevice;
 
   sendDisconnectionMessage(disconnectedDevice.ws);
