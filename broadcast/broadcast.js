@@ -2,91 +2,151 @@ const { messageTypes } = require("../constants/messageTypes");
 
 function sendLinkingCode(ws, linkingCode) {
   console.log("Sending linking code: ", linkingCode);
-  ws.send(
-    JSON.stringify({ type: messageTypes.LINKING_CODE, code: linkingCode })
-  );
+  try {
+    ws.send(
+      JSON.stringify({ type: messageTypes.LINKING_CODE, code: linkingCode })
+    );
+  } catch (error) {
+    console.error("Error sending linking code:", error);
+  }
 }
 
 function sendFoodData(ws, foodData) {
-  ws.send(JSON.stringify({ type: messageTypes.FOOD_DATA, data: foodData }));
+  try {
+    ws.send(JSON.stringify({ type: messageTypes.FOOD_DATA, data: foodData }));
+  } catch (error) {
+    console.error("Error sending food data:", error);
+  }
 }
 
 function sendCompanionChangedDepartment(ws, department) {
-  ws.send(
-    JSON.stringify({
-      type: messageTypes.COMPANION_CHANGED_DEPARTMENT,
-      data: department,
-    })
-  );
+  try {
+    ws.send(
+      JSON.stringify({
+        type: messageTypes.COMPANION_CHANGED_DEPARTMENT,
+        data: department,
+      })
+    );
+  } catch (error) {
+    console.error("Error sending companion changed department:", error);
+  }
 }
 
 function sendCompanionChildSelected(ws, child) {
-  ws.send(JSON.stringify({ type: messageTypes.CHILD_SELECTED, data: child }));
+  try {
+    ws.send(JSON.stringify({ type: messageTypes.CHILD_SELECTED, data: child }));
+  } catch (error) {
+    console.error("Error sending companion child selected:", error);
+  }
 }
 
 function sendRequestFoodData(ws) {
-  ws.send(JSON.stringify({ type: messageTypes.REQUEST_FOOD_DATA }));
+  try {
+    ws.send(JSON.stringify({ type: messageTypes.REQUEST_FOOD_DATA }));
+  } catch (error) {
+    console.error("Error sending request food data:", error);
+  }
 }
 
 function sendInvalidToken(ws) {
-  ws.send(
-    JSON.stringify({
-      type: messageTypes.LINKING_ERROR,
-      message: "Invalid access token",
-    })
-  );
+  try {
+    ws.send(
+      JSON.stringify({
+        type: messageTypes.LINKING_ERROR,
+        message: "Invalid access token",
+      })
+    );
+  } catch (error) {
+    console.error("Error sending invalid token:", error);
+  }
 }
 
 function sendLinkingError(ws, message) {
-  ws.send(JSON.stringify({ type: messageTypes.LINKING_ERROR, message }));
+  try {
+    ws.send(JSON.stringify({ type: messageTypes.LINKING_ERROR, message }));
+  } catch (error) {
+    console.error("Error sending linking error:", error);
+  }
 }
 
 function sendLinkConnected(ws) {
-  ws.send(JSON.stringify({ type: messageTypes.LINK_CONNECTED }));
+  try {
+    ws.send(JSON.stringify({ type: messageTypes.LINK_CONNECTED }));
+  } catch (error) {
+    console.error("Error sending link connected:", error);
+  }
 }
 
 function sendLinkSuccess(ws, deviceId, accessToken) {
-  ws.send(
-    JSON.stringify({
-      type: messageTypes.LINK_SUCCESS,
-      deviceId,
-      accessToken,
-    })
-  );
+  try {
+    ws.send(
+      JSON.stringify({
+        type: messageTypes.LINK_SUCCESS,
+        deviceId,
+        accessToken,
+      })
+    );
+  } catch (error) {
+    console.error("Error sending link success:", error);
+  }
 }
 
 function sendUnlinkSuccess(ws) {
-  ws.send(JSON.stringify({ type: messageTypes.UNLINK_SUCCESS }));
+  try {
+    ws.send(JSON.stringify({ type: messageTypes.UNLINK_SUCCESS }));
+  } catch (error) {
+    console.error("Error sending unlink success:", error);
+  }
 }
 
 function sendCompanionChangedDepartment(ws, changeDeparmentData) {
-  ws.send(
-    JSON.stringify({
-      type: messageTypes.COMPANION_CHANGED_DEPARTMENT,
-      data: changeDeparmentData,
-    })
-  );
+  try {
+    ws.send(
+      JSON.stringify({
+        type: messageTypes.COMPANION_CHANGED_DEPARTMENT,
+        data: changeDeparmentData,
+      })
+    );
+  } catch (error) {
+    console.error("Error sending companion changed department:", error);
+  }
 }
 
 function sendSelectMenu(ws, menuData) {
-  ws.send(JSON.stringify({ type: messageTypes.SELECT_MENU, data: menuData }));
+  try {
+    ws.send(JSON.stringify({ type: messageTypes.SELECT_MENU, data: menuData }));
+  } catch (error) {
+    console.error("Error sending select menu:", error);
+  }
 }
 
 function sendFoodData(ws, foodData) {
-  ws.send(JSON.stringify({ type: messageTypes.FOOD_DATA, data: foodData }));
+  try {
+    ws.send(JSON.stringify({ type: messageTypes.FOOD_DATA, data: foodData }));
+  } catch (error) {
+    console.error("Error sending food data:", error);
+  }
 }
 
 function sendChecklistDepartmentSelected(ws, department) {
-  ws.send(
-    JSON.stringify({
-      type: messageTypes.SELECT_DEPARTMENT,
-      data: department,
-    })
-  );
+  try {
+    ws.send(
+      JSON.stringify({
+        type: messageTypes.SELECT_DEPARTMENT,
+        data: department,
+      })
+    );
+  } catch (error) {
+    console.error("Error sending checklist department selected:", error);
+  }
 }
 
 function sendLinkDisconnected(ws) {
-  ws.send(JSON.stringify({ type: messageTypes.LINK_DISCONNECTED }));
+  try {
+    ws.send(JSON.stringify({ type: messageTypes.LINK_DISCONNECTED }));
+  } catch (error) {
+    console.error("Error sending link disconnected:", error);
+  }
 }
 
 module.exports = {
