@@ -19,7 +19,17 @@ function checklistMessageHandler(
   tokenArray,
   isLocalDevelopment
 ) {
-  console.log("Checklist message received:", message?.deviceId);
+  let debugLinkedTo = "";
+  if (checklistDevices[message?.deviceId]?.linkedTo) {
+    debugLinkedTo = checklistDevices[message?.deviceId]?.linkedTo;
+  }
+
+  console.log(
+    "Checklist msg:",
+    message?.deviceId?.substring(0, 8),
+    message?.type,
+    " Possible Link:" + debugLinkedTo?.substring(0, 8)
+  );
 
   // before we do anything, validate the token
   validateToken(message, tokenArray).then((isValid) => {
@@ -89,7 +99,9 @@ function checklistMessageHandler(
 
       if (!found) {
         sendLinkingError(ws, "No companion found with that linking code");
-        console.log("No companion found with that linking code");
+        console.log(
+          "No companion found with linking code:" + message?.linkedClientId
+        );
         return;
       }
 
