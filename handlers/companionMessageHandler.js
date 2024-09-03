@@ -27,7 +27,17 @@ function companionMessageHandler(
     companionDevices[message.deviceId].ws = ws;
   }
 
-  console.log("Received companion message", message?.deviceId);
+  let debugLinkedTo = "";
+  if (companionDevices[message?.deviceId]?.linkedTo) {
+    debugLinkedTo = companionDevices[message?.deviceId]?.linkedTo;
+  }
+
+  console.log(
+    "Companion msg:",
+    message?.deviceId?.substring(0, 8),
+    message?.type,
+    " Possible Link:" + debugLinkedTo?.substring(0, 8)
+  );
 
   if (message.type === messageTypes.REQUEST_LINKING_CODE) {
     if (companionDevices[message.deviceId].linkingCode) {
