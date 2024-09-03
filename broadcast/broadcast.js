@@ -1,7 +1,7 @@
 const { messageTypes } = require("../constants/messageTypes");
 
 function sendLinkingCode(ws, linkingCode) {
-  console.log("Sending linking code: ", linkingCode);
+  console.log("Server msg   : ^^^^^^^^ Sent linking code: ", linkingCode);
   try {
     ws.send(
       JSON.stringify({ type: messageTypes.LINKING_CODE, code: linkingCode })
