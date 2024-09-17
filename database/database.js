@@ -34,6 +34,9 @@ if (process.env.DB_HOST) {
     process.exit(1);
   }
 } else {
-  console.error(`Database connection failed. Please check your configuration`);
-  process.exit(1);
+  // console.error(`Database connection failed. Please check your configuration`);
+  // process.exit(1);
+  console.log(
+    "No DBHost found. Either we are doing local development or your environment variables are misconfigured",
+  );
 }

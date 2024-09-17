@@ -18,6 +18,8 @@ const { sendLinkDisconnected } = require("./broadcast/broadcast");
 const domain = process.env.DOMAIN || "localhost";
 const isLocalDevelopment = !process.env.DOMAIN;
 
+console.log("isLocalDevelopment 3", isLocalDevelopment);
+
 let server;
 let io;
 
@@ -35,6 +37,7 @@ if (!isLocalDevelopment) {
   });
   io = new WebSocket.Server({ server });
 } else {
+  console.log("Started insecure websocket server port: 443");
   io = new WebSocket.Server({ port: 443 });
 }
 
@@ -47,7 +50,7 @@ io.on("connection", function connection(ws) {
       companionDevices,
       checklistDevices,
       tokenArray,
-      isLocalDevelopment
+      isLocalDevelopment,
     );
   });
 
@@ -71,14 +74,14 @@ function handleClose(ws) {
       disconnectedCompanion,
       checklistDevices,
       companionDevices,
-      ws
+      ws,
     );
   } else if (disconnectedChecklist) {
     handleDeviceDisconnection(
       disconnectedChecklist,
       companionDevices,
       checklistDevices,
-      ws
+      ws,
     );
   }
 }
@@ -91,11 +94,11 @@ function handleDeviceDisconnection(
   disconnectedDevice,
   linkedDevices,
   thisDeviceObj,
-  ws
+  ws,
 ) {
   let keys = Object.keys(thisDeviceObj);
   let index = Object.values(thisDeviceObj).findIndex(
-    (device) => device.ws === ws
+    (device) => device.ws === ws,
   );
   let deviceId = keys[index]?.substr(0, 8);
   console.log("Server msg   : " + deviceId + " has disconnected");
