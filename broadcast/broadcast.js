@@ -4,7 +4,7 @@ function sendLinkingCode(ws, linkingCode) {
   console.log("Server msg   : ^^^^^^^^ Sent linking code: ", linkingCode);
   try {
     ws.send(
-      JSON.stringify({ type: messageTypes.LINKING_CODE, code: linkingCode })
+      JSON.stringify({ type: messageTypes.LINKING_CODE, code: linkingCode }),
     );
   } catch (error) {
     console.error("Error sending linking code:", error);
@@ -25,7 +25,7 @@ function sendCompanionChangedDepartment(ws, department) {
       JSON.stringify({
         type: messageTypes.COMPANION_CHANGED_DEPARTMENT,
         data: department,
-      })
+      }),
     );
   } catch (error) {
     console.error("Error sending companion changed department:", error);
@@ -54,7 +54,7 @@ function sendInvalidToken(ws) {
       JSON.stringify({
         type: messageTypes.LINKING_ERROR,
         message: "Invalid access token",
-      })
+      }),
     );
   } catch (error) {
     console.error("Error sending invalid token:", error);
@@ -84,7 +84,7 @@ function sendLinkSuccess(ws, deviceId, accessToken) {
         type: messageTypes.LINK_SUCCESS,
         deviceId,
         accessToken,
-      })
+      }),
     );
   } catch (error) {
     console.error("Error sending link success:", error);
@@ -105,7 +105,7 @@ function sendCompanionChangedDepartment(ws, changeDeparmentData) {
       JSON.stringify({
         type: messageTypes.COMPANION_CHANGED_DEPARTMENT,
         data: changeDeparmentData,
-      })
+      }),
     );
   } catch (error) {
     console.error("Error sending companion changed department:", error);
@@ -134,7 +134,7 @@ function sendChecklistDepartmentSelected(ws, department) {
       JSON.stringify({
         type: messageTypes.SELECT_DEPARTMENT,
         data: department,
-      })
+      }),
     );
   } catch (error) {
     console.error("Error sending checklist department selected:", error);
@@ -146,6 +146,14 @@ function sendLinkDisconnected(ws) {
     ws.send(JSON.stringify({ type: messageTypes.LINK_DISCONNECTED }));
   } catch (error) {
     console.error("Error sending link disconnected:", error);
+  }
+}
+
+function sendCloseDrawer(ws) {
+  try {
+    ws.send(JSON.stringify({ type: messageTypes.CLOSE_DRAWER }));
+  } catch (error) {
+    console.log("Error sending close drawer:", error);
   }
 }
 
@@ -165,4 +173,5 @@ module.exports = {
   sendLinkingError,
   sendChecklistDepartmentSelected,
   sendLinkDisconnected,
+  sendCloseDrawer,
 };

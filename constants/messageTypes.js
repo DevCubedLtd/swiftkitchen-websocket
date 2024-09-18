@@ -18,5 +18,6 @@ module.exports = {
     SELECT_MENU: "SELECT_MENU",
     PING: "PING",
     PONG: "PONG",
+    CLOSE_DRAWER: "CLOSE_DRAWER",
   },
 };

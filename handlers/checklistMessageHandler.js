@@ -8,6 +8,7 @@ const {
   sendFoodData,
   sendLinkingError,
   sendChecklistDepartmentSelected,
+  sendCloseDrawer,
 } = require("../broadcast/broadcast");
 const { messageTypes } = require("../constants/messageTypes");
 
@@ -17,7 +18,7 @@ function checklistMessageHandler(
   checklistDevices,
   companionDevices,
   tokenArray,
-  isLocalDevelopment
+  isLocalDevelopment,
 ) {
   let debugLinkedTo = "";
   if (checklistDevices[message?.deviceId]?.linkedTo) {
@@ -28,7 +29,7 @@ function checklistMessageHandler(
     "Checklist msg:",
     message?.deviceId?.substring(0, 8),
     message?.type,
-    " Possible Link:" + debugLinkedTo?.substring(0, 8)
+    " Possible Link:" + debugLinkedTo?.substring(0, 8),
   );
 
   // before we do anything, validate the token
@@ -74,7 +75,7 @@ function checklistMessageHandler(
           sendLinkSuccess(
             companionDevice.ws,
             message.deviceId,
-            message.accessToken
+            message.accessToken,
           );
         }
       }
@@ -100,7 +101,7 @@ function checklistMessageHandler(
       if (!found) {
         sendLinkingError(ws, "No companion found with that linking code");
         console.log(
-          "No companion found with linking code:" + message?.linkedClientId
+          "No companion found with linking code:" + message?.linkedClientId,
         );
         return;
       }
@@ -120,7 +121,7 @@ function checklistMessageHandler(
       sendLinkSuccess(
         companionDevices[foundCompanionDeviceId].ws,
         message.deviceId,
-        message.accessToken
+        message.accessToken,
       );
     }
 
@@ -166,6 +167,18 @@ function checklistMessageHandler(
       sendSelectMenu(companionDevice.ws, message.data);
     }
 
+    if (message?.type === messageTypes.CLOSE_DRAWER) {
+      let companionDevice =
+        companionDevices[checklistDevices[message.deviceId].linkedTo];
+
+      if (!companionDevice) {
+        console.log("No companion found to close drawer");
+        return;
+      }
+
+      sendCloseDrawer(companionDevice.ws, message.data);
+    }
+
     if (message?.type === messageTypes.FOOD_DATA) {
       let companionDevice =
         companionDevices[checklistDevices[message.deviceId].linkedTo];
@@ -180,7 +193,7 @@ function checklistMessageHandler(
         sendFoodData(companionDevice.ws, message.data);
       } else {
         console.log(
-          "Tried to send to companion but companion didnt have a ws connection."
+          "Tried to send to companion but companion didnt have a ws connection.",
         );
       }
     }
