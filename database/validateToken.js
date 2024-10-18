@@ -14,7 +14,7 @@ async function validateToken(parsedMessage, tokenArray) {
   try {
     const results = await db.query(
       "SELECT id FROM personal_access_tokens WHERE id = ? AND token = ?",
-      [tokenId, tokenHash]
+      [tokenId, tokenHash],
     );
 
     if (results.length > 0) {
@@ -23,7 +23,8 @@ async function validateToken(parsedMessage, tokenArray) {
       return true;
     }
   } catch (error) {
-    console.error("Database query failed:", error);
+    // console.error("Database query failed:", error);
+    return false;
   }
   return false;
 }

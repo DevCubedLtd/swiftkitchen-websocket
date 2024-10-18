@@ -19,6 +19,14 @@ function sendFoodData(ws, foodData) {
   }
 }
 
+function relayMessage(ws, originalMessage) {
+  try {
+    ws.send(originalMessage.toString());
+  } catch (error) {
+    console.error("Error sending food data:", error);
+  }
+}
+
 function sendCompanionChangedDepartment(ws, department) {
   try {
     ws.send(
@@ -120,14 +128,6 @@ function sendSelectMenu(ws, menuData) {
   }
 }
 
-function sendFoodData(ws, foodData) {
-  try {
-    ws.send(JSON.stringify({ type: messageTypes.FOOD_DATA, data: foodData }));
-  } catch (error) {
-    console.error("Error sending food data:", error);
-  }
-}
-
 function sendChecklistDepartmentSelected(ws, department) {
   try {
     ws.send(
@@ -159,7 +159,7 @@ function sendCloseDrawer(ws) {
 
 module.exports = {
   sendLinkingCode,
-  sendFoodData,
+  relayMessage,
   sendCompanionChangedDepartment,
   sendCompanionChildSelected,
   sendRequestFoodData,

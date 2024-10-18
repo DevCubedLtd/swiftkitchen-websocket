@@ -9,12 +9,14 @@ const {
   sendLinkingError,
   sendChecklistDepartmentSelected,
   sendCloseDrawer,
+  relayMessage,
 } = require("../broadcast/broadcast");
 const { messageTypes } = require("../constants/messageTypes");
 
 function checklistMessageHandler(
   ws,
   message,
+  unparsedMessage,
   checklistDevices,
   companionDevices,
   tokenArray,
@@ -38,6 +40,9 @@ function checklistMessageHandler(
       sendInvalidToken(ws);
       console.log("Message attempted with invalid access token");
       return;
+    }
+    if (!isValid && isLocalDevelopment) {
+      console.log("query failed but its ok");
     }
 
     if (!checklistDevices[message.deviceId]) {
@@ -190,7 +195,8 @@ function checklistMessageHandler(
 
       // TODO IMMEDIATELY
       if (companionDevice?.ws) {
-        sendFoodData(companionDevice.ws, message.data);
+        //sendFoodData(companionDevice.ws, message.data);
+        relayMessage(companionDevice.ws, unparsedMessage);
       } else {
         console.log(
           "Tried to send to companion but companion didnt have a ws connection.",
