@@ -17,19 +17,19 @@ function messageHandler(
   if (!parsedMessage) return;
   let unparsedMessage = message;
 
-  if (parsedMessage?.device_id) {
-    if (!ipHash[parsedMessage.device_id]) {
-      ipHash[parsedMessage.device_id] = ws._socket.remoteAddress;
-    } else if (ipHash[parsedMessage.device_id] !== ws._socket.remoteAddress) {
+  if (parsedMessage?.deviceId) {
+    if (!ipHash[parsedMessage.deviceId]) {
+      ipHash[parsedMessage.deviceId] = ws._socket.remoteAddress;
+    } else if (ipHash[parsedMessage.deviceId] !== ws._socket.remoteAddress) {
       console.log(
         "Device id: ",
-        parsedMessage.device_id,
+        parsedMessage.deviceId,
         " has changed IP address from ",
-        ipHash[parsedMessage.device_id],
+        ipHash[parsedMessage.deviceId],
         " to ",
         ws._socket.remoteAddress
       );
-      ipHash[parsedMessage.device_id] = ws._socket.remoteAddress;
+      ipHash[parsedMessage.deviceId] = ws._socket.remoteAddress;
     }
   }
 
