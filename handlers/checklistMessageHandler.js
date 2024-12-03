@@ -20,7 +20,7 @@ function checklistMessageHandler(
   checklistDevices,
   companionDevices,
   tokenArray,
-  isLocalDevelopment,
+  isLocalDevelopment
 ) {
   let debugLinkedTo = "";
   if (checklistDevices[message?.deviceId]?.linkedTo) {
@@ -31,7 +31,9 @@ function checklistMessageHandler(
     "Checklist msg:",
     message?.deviceId?.substring(0, 8),
     message?.type,
-    " Possible Link:" + debugLinkedTo?.substring(0, 8),
+    " Possible Link:" + (debugLinkedTo?.substring(0, 8) || "None"),
+    "ip?:",
+    ws._socket.remoteAddress
   );
 
   // before we do anything, validate the token
@@ -56,32 +58,29 @@ function checklistMessageHandler(
     }
 
     if (message?.type === messageTypes.REGISTER_CONTROLLER) {
-      // attempt relink
-      // if the devices has a lastKnownLinkTo,
-      // try and find that in the companion devices
-      // if found, check linkedTo is null,
-
-      // if so relink the devices
-
       let lastKnownLinkedTo =
         checklistDevices[message.deviceId].lastKnownLinkedTo;
-      let companionDevice = companionDevices[lastKnownLinkedTo];
 
-      if (companionDevice) {
-        if (companionDevice.linkedTo === null) {
+      if (lastKnownLinkedTo && companionDevices[lastKnownLinkedTo]) {
+        let companionDevice = companionDevices[lastKnownLinkedTo];
+
+        // Verify both devices remember each other
+        if (companionDevice.lastKnownLinkedTo === message.deviceId) {
+          // Reestablish bidirectional link
           checklistDevices[message.deviceId].linkedTo = lastKnownLinkedTo;
           companionDevice.linkedTo = message.deviceId;
-          checklistDevices[message.deviceId].lastKnownLinkedTo =
-            lastKnownLinkedTo;
-          companionDevice.lastKnownLinkedTo = message.deviceId;
 
+          // Notify both devices
           sendLinkConnected(ws);
           sendLinkConnected(companionDevice.ws);
           sendLinkSuccess(
             companionDevice.ws,
             message.deviceId,
-            message.accessToken,
+            message.accessToken
           );
+
+          // Initial data sync
+          sendRequestFoodData(ws);
         }
       }
     }
@@ -106,7 +105,7 @@ function checklistMessageHandler(
       if (!found) {
         sendLinkingError(ws, "No companion found with that linking code");
         console.log(
-          "No companion found with linking code:" + message?.linkedClientId,
+          "No companion found with linking code:" + message?.linkedClientId
         );
         return;
       }
@@ -126,7 +125,7 @@ function checklistMessageHandler(
       sendLinkSuccess(
         companionDevices[foundCompanionDeviceId].ws,
         message.deviceId,
-        message.accessToken,
+        message.accessToken
       );
     }
 
@@ -199,7 +198,7 @@ function checklistMessageHandler(
         relayMessage(companionDevice.ws, unparsedMessage);
       } else {
         console.log(
-          "Tried to send to companion but companion didnt have a ws connection.",
+          "Tried to send to companion but companion didnt have a ws connection."
         );
       }
     }
