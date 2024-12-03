@@ -36,33 +36,41 @@ function companionMessageHandler(
     "Companion msg:",
     message?.deviceId?.substring(0, 8),
     message?.type,
-    " Possible Link:" + debugLinkedTo?.substring(0, 8)
+    " Possible Link:" + (debugLinkedTo?.substring(0, 8) || " None"),
+    " ip?:",
+    ws._socket.remoteAddress
   );
 
   if (message.type === messageTypes.REQUEST_LINKING_CODE) {
-    if (companionDevices[message.deviceId].linkingCode) {
-      sendLinkingCode(ws, companionDevices[message.deviceId].linkingCode);
-
-      // attempt to relink the devices
-      let lastKnownLinkedTo =
-        companionDevices[message.deviceId].lastKnownLinkedTo;
-      let checklistDevice = checklistDevices[lastKnownLinkedTo];
-
-      if (checklistDevice) {
-        if (checklistDevice.linkedTo === null) {
-          checklistDevice.linkedTo = message.deviceId;
-          companionDevices[message.deviceId].linkedTo = lastKnownLinkedTo;
-          sendLinkConnected(ws);
-          sendLinkConnected(checklistDevice.ws);
-          sendLinkSuccess(ws, message.deviceId, message.accessToken);
-        }
-      }
-
-      return;
-    }
-    let generatedLinkingCode = generateUniqueId(companionDevices);
+    // Generate or retrieve existing linking code
+    let generatedLinkingCode =
+      companionDevices[message.deviceId].linkingCode ||
+      generateUniqueId(companionDevices);
     companionDevices[message.deviceId].linkingCode = generatedLinkingCode;
     sendLinkingCode(ws, generatedLinkingCode);
+
+    // Attempt relink using lastKnownLinkedTo
+    let lastKnownLinkedTo =
+      companionDevices[message.deviceId].lastKnownLinkedTo;
+
+    if (lastKnownLinkedTo && checklistDevices[lastKnownLinkedTo]) {
+      let checklistDevice = checklistDevices[lastKnownLinkedTo];
+
+      // Verify both devices remember each other
+      if (checklistDevice.lastKnownLinkedTo === message.deviceId) {
+        // Reestablish bidirectional link
+        checklistDevice.linkedTo = message.deviceId;
+        companionDevices[message.deviceId].linkedTo = lastKnownLinkedTo;
+
+        // Notify both devices of successful relink
+        sendLinkConnected(ws);
+        sendLinkConnected(checklistDevice.ws);
+        sendLinkSuccess(ws, lastKnownLinkedTo, message.accessToken);
+
+        // Request initial data sync
+        sendRequestFoodData(checklistDevice.ws);
+      }
+    }
     return;
   }
 

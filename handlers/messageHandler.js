@@ -9,26 +9,28 @@ function messageHandler(
   companionDevices,
   checklistDevices,
   tokenArray,
-  isLocalDevelopment
+  isLocalDevelopment,
 ) {
   let parsedMessage = checkMessageSafety(message);
   if (!parsedMessage) return;
+  let unparsedMessage = message;
 
   if (parsedMessage.isCompanion) {
     companionMessageHandler(
       ws,
       parsedMessage,
       checklistDevices,
-      companionDevices
+      companionDevices,
     );
   } else if (parsedMessage.isChecklist) {
     checklistMessageHandler(
       ws,
       parsedMessage,
+      unparsedMessage,
       checklistDevices,
       companionDevices,
       tokenArray,
-      isLocalDevelopment
+      isLocalDevelopment,
     );
   }
 }
@@ -42,7 +44,7 @@ function checkMessageSafety(message) {
   let parsedMessage = JSON.parse(message.toString());
   if (!parsedMessage.isCompanion && !parsedMessage.isChecklist) {
     console.log(
-      "Device connected not identifying as companion or checklist. Likely using an old version of the app"
+      "Device connected not identifying as companion or checklist. Likely using an old version of the app",
     );
     return;
   }

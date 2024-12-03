@@ -8,12 +8,15 @@ const {
   sendFoodData,
   sendLinkingError,
   sendChecklistDepartmentSelected,
+  sendCloseDrawer,
+  relayMessage,
 } = require("../broadcast/broadcast");
 const { messageTypes } = require("../constants/messageTypes");
 
 function checklistMessageHandler(
   ws,
   message,
+  unparsedMessage,
   checklistDevices,
   companionDevices,
   tokenArray,
@@ -28,7 +31,9 @@ function checklistMessageHandler(
     "Checklist msg:",
     message?.deviceId?.substring(0, 8),
     message?.type,
-    " Possible Link:" + debugLinkedTo?.substring(0, 8)
+    " Possible Link:" + (debugLinkedTo?.substring(0, 8) || "None"),
+    "ip?:",
+    ws._socket.remoteAddress
   );
 
   // before we do anything, validate the token
@@ -37,6 +42,9 @@ function checklistMessageHandler(
       sendInvalidToken(ws);
       console.log("Message attempted with invalid access token");
       return;
+    }
+    if (!isValid && isLocalDevelopment) {
+      console.log("query failed but its ok");
     }
 
     if (!checklistDevices[message.deviceId]) {
@@ -50,25 +58,19 @@ function checklistMessageHandler(
     }
 
     if (message?.type === messageTypes.REGISTER_CONTROLLER) {
-      // attempt relink
-      // if the devices has a lastKnownLinkTo,
-      // try and find that in the companion devices
-      // if found, check linkedTo is null,
-
-      // if so relink the devices
-
       let lastKnownLinkedTo =
         checklistDevices[message.deviceId].lastKnownLinkedTo;
-      let companionDevice = companionDevices[lastKnownLinkedTo];
 
-      if (companionDevice) {
-        if (companionDevice.linkedTo === null) {
+      if (lastKnownLinkedTo && companionDevices[lastKnownLinkedTo]) {
+        let companionDevice = companionDevices[lastKnownLinkedTo];
+
+        // Verify both devices remember each other
+        if (companionDevice.lastKnownLinkedTo === message.deviceId) {
+          // Reestablish bidirectional link
           checklistDevices[message.deviceId].linkedTo = lastKnownLinkedTo;
           companionDevice.linkedTo = message.deviceId;
-          checklistDevices[message.deviceId].lastKnownLinkedTo =
-            lastKnownLinkedTo;
-          companionDevice.lastKnownLinkedTo = message.deviceId;
 
+          // Notify both devices
           sendLinkConnected(ws);
           sendLinkConnected(companionDevice.ws);
           sendLinkSuccess(
@@ -76,6 +78,9 @@ function checklistMessageHandler(
             message.deviceId,
             message.accessToken
           );
+
+          // Initial data sync
+          sendRequestFoodData(ws);
         }
       }
     }
@@ -166,6 +171,18 @@ function checklistMessageHandler(
       sendSelectMenu(companionDevice.ws, message.data);
     }
 
+    if (message?.type === messageTypes.CLOSE_DRAWER) {
+      let companionDevice =
+        companionDevices[checklistDevices[message.deviceId].linkedTo];
+
+      if (!companionDevice) {
+        console.log("No companion found to close drawer");
+        return;
+      }
+
+      sendCloseDrawer(companionDevice.ws, message.data);
+    }
+
     if (message?.type === messageTypes.FOOD_DATA) {
       let companionDevice =
         companionDevices[checklistDevices[message.deviceId].linkedTo];
@@ -177,7 +194,8 @@ function checklistMessageHandler(
 
       // TODO IMMEDIATELY
       if (companionDevice?.ws) {
-        sendFoodData(companionDevice.ws, message.data);
+        //sendFoodData(companionDevice.ws, message.data);
+        relayMessage(companionDevice.ws, unparsedMessage);
       } else {
         console.log(
           "Tried to send to companion but companion didnt have a ws connection."
