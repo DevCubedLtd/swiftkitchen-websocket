@@ -2,6 +2,8 @@ const { tryParseJSONObject } = require("../utils/tryParseJSONObject");
 const { companionMessageHandler } = require("./companionMessageHandler");
 const { checklistMessageHandler } = require("./checklistMessageHandler");
 
+let ipHash = {};
+
 function messageHandler(
   ws,
   message,
@@ -9,18 +11,33 @@ function messageHandler(
   companionDevices,
   checklistDevices,
   tokenArray,
-  isLocalDevelopment,
+  isLocalDevelopment
 ) {
   let parsedMessage = checkMessageSafety(message);
   if (!parsedMessage) return;
   let unparsedMessage = message;
+
+  if (parsedMessage?.device_id) {
+    if (!ipHash[parsedMessage.device_id]) {
+      ipHash[parsedMessage.device_id] = ws._socket.remoteAddress;
+    } else if (ipHash[parsedMessage.device_id] !== ws._socket.remoteAddress) {
+      console.log(
+        "Device id: ",
+        parsedMessage.device_id,
+        " has changed IP address from ",
+        ipHash[parsedMessage.device_id],
+        " to ",
+        ws._socket.remoteAddress
+      );
+    }
+  }
 
   if (parsedMessage.isCompanion) {
     companionMessageHandler(
       ws,
       parsedMessage,
       checklistDevices,
-      companionDevices,
+      companionDevices
     );
   } else if (parsedMessage.isChecklist) {
     checklistMessageHandler(
@@ -30,7 +47,7 @@ function messageHandler(
       checklistDevices,
       companionDevices,
       tokenArray,
-      isLocalDevelopment,
+      isLocalDevelopment
     );
   }
 }
@@ -44,7 +61,7 @@ function checkMessageSafety(message) {
   let parsedMessage = JSON.parse(message.toString());
   if (!parsedMessage.isCompanion && !parsedMessage.isChecklist) {
     console.log(
-      "Device connected not identifying as companion or checklist. Likely using an old version of the app",
+      "Device connected not identifying as companion or checklist. Likely using an old version of the app"
     );
     return;
   }
