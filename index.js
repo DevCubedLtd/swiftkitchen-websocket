@@ -50,12 +50,12 @@ io.on("connection", function connection(ws) {
       companionDevices,
       checklistDevices,
       tokenArray,
-      isLocalDevelopment,
+      isLocalDevelopment
     );
   });
 
-  ws.on("close", function close() {
-    handleClose(ws);
+  ws.on("close", function close(event) {
+    handleClose(ws, event);
   });
 });
 
@@ -65,7 +65,7 @@ if (!isLocalDevelopment) {
   });
 }
 
-function handleClose(ws) {
+function handleClose(ws, event) {
   const disconnectedCompanion = findDisconnectedDevice(companionDevices, ws);
   const disconnectedChecklist = findDisconnectedDevice(checklistDevices, ws);
 
@@ -75,6 +75,7 @@ function handleClose(ws) {
       checklistDevices,
       companionDevices,
       ws,
+      event
     );
   } else if (disconnectedChecklist) {
     handleDeviceDisconnection(
@@ -82,6 +83,7 @@ function handleClose(ws) {
       companionDevices,
       checklistDevices,
       ws,
+      event
     );
   }
 }
@@ -95,13 +97,19 @@ function handleDeviceDisconnection(
   linkedDevices,
   thisDeviceObj,
   ws,
+  event
 ) {
   let keys = Object.keys(thisDeviceObj);
   let index = Object.values(thisDeviceObj).findIndex(
-    (device) => device.ws === ws,
+    (device) => device.ws === ws
   );
   let deviceId = keys[index]?.substr(0, 8);
-  console.log("Server msg   : " + deviceId + " has disconnected");
+  console.log(
+    "Server msg   : " +
+      deviceId +
+      " has disconnected. reason: " +
+      getCloseReason(event)
+  );
 
   const { linkedTo } = disconnectedDevice;
 
@@ -121,4 +129,26 @@ function sendDisconnectionMessage(ws) {
   if (ws) {
     sendLinkDisconnected(ws);
   }
+}
+
+function getCloseReason(code) {
+  const reasons = {
+    1000: "Normal closure",
+    1001: "Going away - Client/server is going down or browser is navigating away",
+    1002: "Protocol error",
+    1003: "Unsupported data type",
+    1004: "Reserved",
+    1005: "No status code present",
+    1006: "Abnormal closure - Connection dropped without close frame",
+    1007: "Invalid frame payload data",
+    1008: "Policy violation",
+    1009: "Message too big",
+    1010: "Required extension missing",
+    1011: "Internal server error",
+    1012: "Service restart",
+    1013: "Try again later",
+    1014: "Bad gateway",
+    1015: "TLS handshake failure",
+  };
+  return reasons[code] + " " + code || `Unknown reason (${code})`;
 }
