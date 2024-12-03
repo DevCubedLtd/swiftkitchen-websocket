@@ -29,6 +29,7 @@ function messageHandler(
         " to ",
         ws._socket.remoteAddress
       );
+      ipHash[parsedMessage.device_id] = ws._socket.remoteAddress;
     }
   }
 
