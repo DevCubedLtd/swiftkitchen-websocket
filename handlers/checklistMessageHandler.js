@@ -10,6 +10,7 @@ const {
   sendChecklistDepartmentSelected,
   sendCloseDrawer,
   relayMessage,
+  sendRequestFoodData,
 } = require("../broadcast/broadcast");
 const { messageTypes } = require("../constants/messageTypes");
 
