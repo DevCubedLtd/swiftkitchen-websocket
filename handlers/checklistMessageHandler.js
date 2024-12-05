@@ -32,6 +32,8 @@ function checklistMessageHandler(
     "Checklist msg:",
     message?.deviceId?.substring(0, 8),
     message?.type,
+    "Location: ",
+    message?.locationId,
     " Possible Link:" + (debugLinkedTo?.substring(0, 8) || "None"),
     "ip?:",
     ws._socket.remoteAddress
