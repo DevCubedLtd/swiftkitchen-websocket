@@ -78,7 +78,10 @@ io.on("connection", function connection(ws) {
 function handleIncoming(ws, message, isBinary) {
   // every message should be a parsable object but its worth checking to avoid crashed
   if (!tryParseJSONObject(message.toString())) {
-    console.log("Incoming message not parsable: ", message.toString());
+    console.log(
+      "Server msg   :" + "Incoming message not parsable: ",
+      message.toString()
+    );
     return;
   }
 
@@ -86,7 +89,8 @@ function handleIncoming(ws, message, isBinary) {
 
   if (!parsedMessage.isCompanion && !parsedMessage.isChecklist) {
     console.log(
-      "Device connected not identifying as companion or checklist. Likely using an old version of the app"
+      "Server msg   :" +
+        "Device connected not identifying as companion or checklist. Likely using an old version of the app"
     );
     return;
   }
@@ -142,7 +146,8 @@ function handleIncoming(ws, message, isBinary) {
     if (parsedMessage?.type === messageTypes.REGISTER_CONTROLLER) {
       if (parsedMessage.isCompanion) {
         console.log(
-          "Something went wrong, companion device tried to register as controller"
+          "Server msg   :" +
+            "Something went wrong, companion device tried to register as controller"
         );
         return;
       }
@@ -211,7 +216,8 @@ function handleIncoming(ws, message, isBinary) {
     if (parsedMessage?.type === messageTypes.REQUEST_LINKING_CODE) {
       if (parsedMessage.isChecklist) {
         console.log(
-          "Something went wrong, checklist device tried to request linking code"
+          "Server msg   :" +
+            "Something went wrong, checklist device tried to request linking code"
         );
         return;
       }
@@ -267,7 +273,8 @@ function handleIncoming(ws, message, isBinary) {
     // something
     if (!knownClient) {
       console.log(
-        "Client not known by this point, likely making requests without registering or being linked",
+        "Server msg   :" +
+          "Client not known by this point, likely making requests without registering or being linked",
         parsedMessage.type
       );
       return;
@@ -309,7 +316,7 @@ function handleControllerMessages(ws, parsedMessage, knownClient, isValid) {
     // if there was no client we have to send linking error
     if (!linkedClients.length) {
       // send error message back to client
-      console.log(companionDevices);
+      console.log("Server msg   :" + " Cannot find device to link too");
 
       knownClient.ws.send(
         JSON.stringify({
@@ -516,7 +523,9 @@ function handleCompanionMessages(ws, parsedMessage, knownClient, isValid) {
         checklistDevices.clientId === knownClient.linkedClientId
     );
     if (!linkedClient) {
-      console.log("Requesting food but couldnt find a linked client");
+      console.log(
+        "Server msg   :" + "Requesting food but couldnt find a linked client"
+      );
       return;
     }
 

@@ -43,7 +43,9 @@ function checklistMessageHandler(
   validateToken(message, tokenArray).then((isValid) => {
     if (!isValid && !isLocalDevelopment) {
       sendInvalidToken(ws);
-      console.log("Message attempted with invalid access token");
+      console.log(
+        "Server msg   :" + "Message attempted with invalid access token"
+      );
       return;
     }
     if (!isValid && isLocalDevelopment) {
@@ -205,7 +207,8 @@ function checklistMessageHandler(
         relayMessage(companionDevice.ws, unparsedMessage);
       } else {
         console.log(
-          "Tried to send to companion but companion didnt have a ws connection."
+          "Server msg   :" +
+            "Tried to send to companion but companion didnt have a ws connection."
         );
       }
     }

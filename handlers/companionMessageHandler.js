@@ -76,14 +76,14 @@ function companionMessageHandler(
 
   if (message?.type === messageTypes.COMPANION_CHANGED_DEPARTMENT) {
     if (!companionDevices[message.deviceId].linkedTo) {
-      console.log("Companion is not linked to a client");
+      console.log("Server msg   :" + "Companion is not linked to a client");
       return;
     }
 
     let linkedClient =
       checklistDevices[companionDevices[message.deviceId].linkedTo];
     if (!linkedClient || !linkedClient.ws) {
-      console.log("Linked client not found");
+      console.log("Server msg   :" + "Linked client not found");
       return;
     }
 
@@ -93,18 +93,18 @@ function companionMessageHandler(
 
   if (message?.type === messageTypes.CHILD_SELECTED) {
     if (!companionDevices[message.deviceId].linkedTo) {
-      console.log("Companion is not linked to a client");
+      console.log("Server msg   :" + "Companion is not linked to a client");
       return;
     }
 
     let linkedClient =
       checklistDevices[companionDevices[message.deviceId].linkedTo];
     if (!linkedClient || !linkedClient.ws) {
-      console.log({
-        companions: stripWSFromJSON(companionDevices),
-        checklist: stripWSFromJSON(checklistDevices),
-      });
-      console.log("Linked client not found");
+      // console.log({
+      //   companions: stripWSFromJSON(companionDevices),
+      //   checklist: stripWSFromJSON(checklistDevices),
+      // });
+      console.log("Server msg   :" + "Linked client not found");
       return;
     }
 
@@ -114,14 +114,14 @@ function companionMessageHandler(
 
   if (message?.type === messageTypes.REQUEST_FOOD_DATA) {
     if (!companionDevices[message.deviceId].linkedTo) {
-      console.log("Companion is not linked to a client");
+      console.log("Server msg   :" + "Companion is not linked to a client");
       return;
     }
 
     let linkedClient =
       checklistDevices[companionDevices[message.deviceId].linkedTo];
     if (!linkedClient || !linkedClient.ws) {
-      console.log("Linked client not found");
+      console.log("Server msg   :" + "Linked client not found");
       return;
     }
 

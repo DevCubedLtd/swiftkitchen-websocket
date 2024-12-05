@@ -153,7 +153,7 @@ function sendCloseDrawer(ws) {
   try {
     ws.send(JSON.stringify({ type: messageTypes.CLOSE_DRAWER }));
   } catch (error) {
-    console.log("Error sending close drawer:", error);
+    console.log("Server msg   :" + "Error sending close drawer:", error);
   }
 }
 
