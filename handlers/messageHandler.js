@@ -11,11 +11,16 @@ function messageHandler(
   companionDevices,
   checklistDevices,
   tokenArray,
-  isLocalDevelopment
+  isLocalDevelopment,
+  locationIds
 ) {
   let parsedMessage = checkMessageSafety(message);
   if (!parsedMessage) return;
   let unparsedMessage = message;
+
+  if (message?.locationId && message?.deviceId) {
+    locationIds[message.deviceId] = message.locationId;
+  }
 
   if (parsedMessage?.deviceId) {
     if (!ipHash[parsedMessage.deviceId]) {

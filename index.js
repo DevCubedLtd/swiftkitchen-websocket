@@ -30,6 +30,8 @@ var tokenArray = [];
 const companionDevices = {};
 const checklistDevices = {};
 
+const locationIds = {};
+
 if (!isLocalDevelopment) {
   server = https.createServer({
     cert: readFileSync("/etc/letsencrypt/live/" + domain + "/fullchain.pem"),
@@ -50,7 +52,8 @@ io.on("connection", function connection(ws) {
       companionDevices,
       checklistDevices,
       tokenArray,
-      isLocalDevelopment
+      isLocalDevelopment,
+      locationIds
     );
   });
 
@@ -107,6 +110,9 @@ function handleDeviceDisconnection(
   console.log(
     "Server msg   : " +
       deviceId +
+      "locationId: " +
+      locationIds[deviceId] +
+      " " +
       " has disconnected. reason: " +
       getCloseReason(event)
   );
