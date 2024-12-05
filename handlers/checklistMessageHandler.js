@@ -33,7 +33,7 @@ function checklistMessageHandler(
     message?.deviceId?.substring(0, 8),
     message?.type,
     "Location: ",
-    message?.locationId,
+    message?.locationId ? message?.locationId : null,
     " Possible Link:" + (debugLinkedTo?.substring(0, 8) || "None"),
     "ip?:",
     ws._socket.remoteAddress
@@ -47,7 +47,7 @@ function checklistMessageHandler(
       return;
     }
     if (!isValid && isLocalDevelopment) {
-      console.log("query failed but its ok");
+      console.log("Server msg   : " + "query failed but its ok");
     }
 
     if (!checklistDevices[message.deviceId]) {
@@ -108,7 +108,9 @@ function checklistMessageHandler(
       if (!found) {
         sendLinkingError(ws, "No companion found with that linking code");
         console.log(
-          "No companion found with linking code:" + message?.linkedClientId
+          "Server msg   : " +
+            "No companion found with linking code:" +
+            message?.linkedClientId
         );
         return;
       }
@@ -138,7 +140,7 @@ function checklistMessageHandler(
         companionDevices[checklistDevices[message.deviceId].linkedTo];
 
       if (!checklistDevice || !companionDevice) {
-        console.log("No companion found to unlink from");
+        console.log("Server msg   : " + "No companion found to unlink from");
         return;
       }
 
@@ -155,7 +157,9 @@ function checklistMessageHandler(
         companionDevices[checklistDevices[message.deviceId].linkedTo];
 
       if (!companionDevice) {
-        console.log("No companion found to select department");
+        console.log(
+          "Server msg   : " + "No companion found to select department"
+        );
         return;
       }
 
@@ -167,7 +171,7 @@ function checklistMessageHandler(
         companionDevices[checklistDevices[message.deviceId].linkedTo];
 
       if (!companionDevice) {
-        console.log("No companion found to select menu");
+        console.log("Server msg   : " + "No companion found to select menu");
         return;
       }
 
@@ -179,7 +183,7 @@ function checklistMessageHandler(
         companionDevices[checklistDevices[message.deviceId].linkedTo];
 
       if (!companionDevice) {
-        console.log("No companion found to close drawer");
+        console.log("Server msg   : " + "No companion found to close drawer");
         return;
       }
 
@@ -191,7 +195,7 @@ function checklistMessageHandler(
         companionDevices[checklistDevices[message.deviceId].linkedTo];
 
       if (!companionDevice) {
-        console.log("No companion found to send food data");
+        console.log("Server msg   : " + "No companion found to send food data");
         return;
       }
 

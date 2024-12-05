@@ -18,8 +18,19 @@ function messageHandler(
   if (!parsedMessage) return;
   let unparsedMessage = message;
 
-  if (message?.locationId && message?.deviceId) {
-    locationIds[message.deviceId] = message.locationId;
+  if (
+    parsedMessage?.locationId &&
+    parsedMessage?.locationId != "undefined" &&
+    parsedMessage?.deviceId
+  ) {
+    console.log(
+      "Server msg   : " +
+        "Adding Location ID: " +
+        parsedMessage.locationId +
+        " Device ID: " +
+        parsedMessage.deviceId
+    );
+    locationIds[parsedMessage.deviceId] = parsedMessage.locationId;
   }
 
   if (parsedMessage?.deviceId) {

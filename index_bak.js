@@ -9,7 +9,7 @@ const { parse } = require("path");
 const domain = process.env.DOMAIN || "localhost";
 
 const isLocalDevelopment = !process.env.DOMAIN;
-console.log("isLocalDevelopment", isLocalDevelopment);
+console.log("Server msg   : " + "isLocalDevelopment", isLocalDevelopment);
 
 let server;
 let io;
